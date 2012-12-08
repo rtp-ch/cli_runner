@@ -97,6 +97,9 @@ class rtp_cli
         }
 
         //
+        $this->setType();
+
+        //
         try {
             $this->setClassAndInstance();
 
@@ -115,8 +118,13 @@ class rtp_cli
         }
 
         //
-        $this->setType();
-        $this->setArgs();
+        try {
+            $this->setArgs();
+
+        } catch (Exception $e) {
+            $result = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
+            $this->printMsg($result);
+        }
 
         //
         try {
@@ -126,9 +134,13 @@ class rtp_cli
             $result = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
         }
 
+        //
         $this->printMsg($result);
     }
 
+    /**
+     * @param $result
+     */
     private function printMsg($result)
     {
         $methodCall = $this->getClass() . $this->getMethodCall() . $this->getMethod();
@@ -180,10 +192,10 @@ class rtp_cli
     private function getClassOrInstance()
     {
         if ($this->type === self::STATIC_TYPE_SHORT || $this->type === self::STATIC_TYPE_LONG) {
-            return $this->instance;
+            return $this->class;
 
         } else {
-            return $this->class;
+            return $this->instance;
         }
     }
 
@@ -193,14 +205,6 @@ class rtp_cli
     private function getClass()
     {
         return $this->class;
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getInstance()
-    {
-        return $this->instance;
     }
 
     /**
@@ -270,7 +274,25 @@ class rtp_cli
      */
     private function setArgs()
     {
-        $this->args = json_decode($this->arguments['type'], true);
+        if ($this->arguments['args']) {
+            $file = $this->arguments['args'];
+
+            if (!is_file($file) || !is_readable($file)) {
+                $file = t3lib_div::getFileAbsFileName($this->arguments['args']);
+            }
+
+            if (!is_file($file) || !is_readable($file)) {
+                $file = t3lib_div::getFileAbsFileName(__DIR__. DIRECTORY_SEPARATOR . $this->arguments['args']);
+            }
+
+            if (is_file($file) && is_readable($file)) {
+                $this->args = json_decode(file_get_contents($file), true);
+
+            } else {
+                $msg = 'Unable to read file "' . $this->arguments['args'] . '"';
+                throw new BadMethodCallException($msg, 1354965903);
+            }
+        }
     }
 
     /**
