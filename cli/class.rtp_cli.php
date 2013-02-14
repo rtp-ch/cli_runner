@@ -59,7 +59,8 @@ class rtp_cli
         'c' => 'class',
         'm' => 'method',
         't' => 'type',
-        'a' => 'args'
+        'a' => 'args',
+        'f' => 'file'
     );
 
     /**
@@ -97,6 +98,15 @@ class rtp_cli
         }
 
         //
+        try {
+            $this->includeFile();
+
+        } catch (Exception $e) {
+            $result = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
+            $this->printMsg($result);
+        }
+
+        //
         $this->setType();
 
         //
@@ -128,7 +138,14 @@ class rtp_cli
 
         //
         try {
-            $result = call_user_func_array(array($this->getClassOrInstance(), $this->getMethod()), $this->getArgs());
+            if ($this->hasClass()) {
+                $callback = array($this->getClassOrInstance(), $this->getMethod());
+                $result = call_user_func_array($callback, $this->getArgs());
+
+            } else {
+                $result = call_user_func_array($this->getMethod(), $this->getArgs());
+            }
+
 
         } catch (Exception $e) {
             $result = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
@@ -143,9 +160,10 @@ class rtp_cli
      */
     private function printMsg($result)
     {
-        $methodCall = $this->getClass() . $this->getMethodCall() . $this->getMethod();
-        $message    = 'Output of "' . $methodCall . '" with arguments:';
-        $border     = str_repeat('=', strlen($message));
+        $methodCall  = $this->hasClass() ? $this->getClass() . $this->getMethodCall() : '';
+        $methodCall .= $this->getMethod();
+        $message     = 'Output of "' . $methodCall . '" with arguments:';
+        $border      = str_repeat('=', strlen($message));
 
         echo "\n" . $border . "\n";
         echo $message . "\n";
@@ -177,11 +195,8 @@ class rtp_cli
     private function setClassAndInstance()
     {
         $this->class = $this->arguments['class'];
-        if (!$this->class) {
-            $msg = 'Missing required class name!';
-            throw new BadMethodCallException($msg, 1354958084);
 
-        } else {
+        if ($this->hasClass()) {
             $this->instance = t3lib_div::makeInstance($this->class);
         }
     }
@@ -191,11 +206,13 @@ class rtp_cli
      */
     private function getClassOrInstance()
     {
-        if ($this->type === self::STATIC_TYPE_SHORT || $this->type === self::STATIC_TYPE_LONG) {
-            return $this->class;
+        if ($this->hasClass()) {
+            if ($this->type === self::STATIC_TYPE_SHORT || $this->type === self::STATIC_TYPE_LONG) {
+                return $this->class;
 
-        } else {
-            return $this->instance;
+            } else {
+                return $this->instance;
+            }
         }
     }
 
@@ -205,6 +222,14 @@ class rtp_cli
     private function getClass()
     {
         return $this->class;
+    }
+
+    /**
+     * @return bool
+     */
+    private function hasClass()
+    {
+        return (boolean) $this->class;
     }
 
     /**
@@ -224,12 +249,18 @@ class rtp_cli
         if (!$this->method) {
             $msg = 'Missing required method name!';
             throw new BadMethodCallException($msg, 1354959022);
+        }
 
-        } elseif (!method_exists($this->instance, $this->method)) {
+        if ($this->hasClass() && !method_exists($this->instance, $this->getMethod())) {
             $msg = 'Method "' . $this->method . '" not available in class "' . $this->class . '"!';
             throw new BadMethodCallException($msg, 1354959172);
+
+        } elseif (!$this->hasClass() && !function_exists($this->getMethod())) {
+            $msg = 'Unknown function "' . $this->getMethod() . '" or missing required class name!';
+            throw new BadMethodCallException($msg, 1354958084);
         }
     }
+
 
     /**
      * @return mixed
@@ -277,20 +308,22 @@ class rtp_cli
         if ($this->arguments['args']) {
             $file = $this->arguments['args'];
 
-            if (!is_file($file) || !is_readable($file)) {
-                $file = t3lib_div::getFileAbsFileName($this->arguments['args']);
-            }
+            if ($file) {
+                if (!is_file($file) || !is_readable($file)) {
+                    $file = t3lib_div::getFileAbsFileName($this->arguments['args']);
+                }
 
-            if (!is_file($file) || !is_readable($file)) {
-                $file = t3lib_div::getFileAbsFileName(__DIR__. DIRECTORY_SEPARATOR . $this->arguments['args']);
-            }
+                if (!is_file($file) || !is_readable($file)) {
+                    $file = t3lib_div::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $this->arguments['args']);
+                }
 
-            if (is_file($file) && is_readable($file)) {
-                $this->args = json_decode(file_get_contents($file), true);
+                if (is_file($file) && is_readable($file)) {
+                    $this->args = json_decode(file_get_contents($file), true);
 
-            } else {
-                $msg = 'Unable to read file "' . $this->arguments['args'] . '"';
-                throw new BadMethodCallException($msg, 1354965903);
+                } else {
+                    $msg = 'Unable to read file "' . $this->arguments['args'] . '"';
+                    throw new BadMethodCallException($msg, 1354965903);
+                }
             }
         }
     }
@@ -300,7 +333,35 @@ class rtp_cli
      */
     private function getArgs()
     {
-        return $this->args;
+        return is_array($this->args) && !empty($this->args) ? $this->args : array();
+    }
+
+    /**
+     * @throws BadMethodCallException
+     */
+    private function includeFile()
+    {
+        if ($this->arguments['file']) {
+            $file = $this->arguments['file'];
+
+            if ($file) {
+                if (!is_file($file) || !is_readable($file)) {
+                    $file = t3lib_div::getFileAbsFileName($this->arguments['file']);
+                }
+
+                if (!is_file($file) || !is_readable($file)) {
+                    $file = t3lib_div::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $this->arguments['file']);
+                }
+
+                if (is_file($file) && is_readable($file)) {
+                    require_once $file;
+
+                } else {
+                    $msg = 'Unable to include file "' . $this->arguments['file'] . '"';
+                    throw new BadMethodCallException($msg, 1360849885);
+                }
+            }
+        }
     }
 }
 
