@@ -10,31 +10,6 @@ class rtp_cli
     /**
      * @var
      */
-    const STATIC_TYPE_LONG          = 'static';
-
-    /**
-     * @var
-     */
-    const INITIALIZE_TYPE_LONG      = 'initialize';
-
-    /**
-     * @var
-     */
-    const STATIC_TYPE_SHORT         = 's';
-
-    /**
-     * @var
-     */
-    const INITIALIZE_TYPE_SHORT     = 'i';
-
-    /**
-     * @var
-     */
-    private $instance;
-
-    /**
-     * @var
-     */
     private $method;
 
     /**
@@ -45,7 +20,7 @@ class rtp_cli
     /**
      * @var
      */
-    private $type;
+    private $static;
 
     /**
      * @var
@@ -58,7 +33,6 @@ class rtp_cli
     static private $options = array(
         'c' => 'class',
         'm' => 'method',
-        't' => 'type',
         'a' => 'args',
         'f' => 'file'
     );
@@ -107,11 +81,8 @@ class rtp_cli
         }
 
         //
-        $this->setType();
-
-        //
         try {
-            $this->setClassAndInstance();
+            $this->setClass();
 
         } catch (Exception $e) {
             $result = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
@@ -136,11 +107,26 @@ class rtp_cli
             $this->printMsg($result);
         }
 
+        // TODO: Alternate Environments, e.g. backend
+        if (!isset($this->arguments['env'])
+            || strtolower($this->arguments['env']) === 'fe'
+            || strtolower($this->arguments['env']) === 'frontend') {
+
+            FrontendEnvironment::simulate();
+        }
+
         //
         try {
             if ($this->hasClass()) {
-                $callback = array($this->getClassOrInstance(), $this->getMethod());
-                $result = call_user_func_array($callback, $this->getArgs());
+                $method = new ReflectionMethod($this->getClass(), $this->getMethod());
+                $method->setAccessible(true);
+
+                if ($this->isStatic()) {
+                    $result = $method->invokeArgs(null, $this->getArgs());
+
+                } else {
+                    $result = $method->invokeArgs(t3lib_div::makeInstance($this->getClass()), $this->getArgs());
+                }
 
             } else {
                 $result = call_user_func_array($this->getMethod(), $this->getArgs());
@@ -192,28 +178,9 @@ class rtp_cli
     /**
      * @throws BadMethodCallException
      */
-    private function setClassAndInstance()
+    private function setClass()
     {
         $this->class = $this->arguments['class'];
-
-        if ($this->hasClass()) {
-            $this->instance = t3lib_div::makeInstance($this->class);
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getClassOrInstance()
-    {
-        if ($this->hasClass()) {
-            if ($this->type === self::STATIC_TYPE_SHORT || $this->type === self::STATIC_TYPE_LONG) {
-                return $this->class;
-
-            } else {
-                return $this->instance;
-            }
-        }
     }
 
     /**
@@ -251,16 +218,18 @@ class rtp_cli
             throw new BadMethodCallException($msg, 1354959022);
         }
 
-        if ($this->hasClass() && !method_exists($this->instance, $this->getMethod())) {
-            $msg = 'Method "' . $this->method . '" not available in class "' . $this->class . '"!';
-            throw new BadMethodCallException($msg, 1354959172);
+        if ($this->hasClass()) {
+            $reflectionClass = new ReflectionClass($this->getClass());
+            if (!$reflectionClass->hasMethod($this->getMethod())) {
+                $msg = 'Method "' . $this->method . '" not available in class "' . $this->class . '"!';
+                throw new BadMethodCallException($msg, 1354959172);
+            }
 
         } elseif (!$this->hasClass() && !function_exists($this->getMethod())) {
             $msg = 'Unknown function "' . $this->getMethod() . '" or missing required class name!';
             throw new BadMethodCallException($msg, 1354958084);
         }
     }
-
 
     /**
      * @return mixed
@@ -271,33 +240,23 @@ class rtp_cli
     }
 
     /**
-     *
-     */
-    private function setType()
-    {
-        $this->type = trim(strtolower($this->arguments['type']));
-        if ($this->type === self::STATIC_TYPE_SHORT || $this->type === self::STATIC_TYPE_LONG) {
-            $this->type = self::STATIC_TYPE_LONG;
-
-        } else {
-            $this->type = self::INITIALIZE_TYPE_LONG;
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getType()
-    {
-        return $this->type;
-    }
-
-    /**
      * @return bool
      */
     private function isStatic()
     {
-        return ($this->getType() === self::STATIC_TYPE_SHORT || $this->getType() === self::STATIC_TYPE_LONG);
+        if (is_null($this->static)) {
+            $this->static = false;
+
+            if ($this->hasClass()) {
+                $method = new ReflectionMethod($this->getClass(), $this->getMethod());
+
+                if ($method->isStatic()) {
+                    $this->static = true;
+                }
+            }
+        }
+
+        return $this->static;
     }
 
     /**
@@ -364,6 +323,131 @@ class rtp_cli
         }
     }
 }
+
+/**
+ * Simulates frontend environment by
+ */
+class FrontendEnvironment
+{
+
+    /**
+     * Simulates a frontend environment. Inspired by various hacks for simulating the frontend in
+     * Tx_Fluid_ViewHelpers_CObjectViewHelper, Tx_Fluid_ViewHelpers_ImageViewHelper,
+     * Tx_Fluid_ViewHelpers_Format_CropViewHelper, Tx_Fluid_ViewHelpers_Format_HtmlViewHelper and
+     * Tx_Extbase_Utility_FrontendSimulator (and possibly others...)
+     *
+     * @param array $data
+     * @param string $table
+     */
+    public static function simulate(array $data = array(), $table = '')
+    {
+        self::setTimeTracker();
+        self::setTsfe();
+        self::setWorkingDir();
+        self::setCharSet();
+        self::setPageSelect();
+        self::setTypoScript();
+        self::setContentObject($data, $table);
+    }
+
+    /**
+     * @param array $data
+     * @param string $table
+     */
+    private static function setContentObject(array $data = array(), $table = '')
+    {
+        $GLOBALS['TSFE']->cObj = t3lib_div::makeInstance('tslib_cObj');
+        $GLOBALS['TSFE']->cObj->start($data, $table);
+    }
+
+    /**
+     * Creates an instance of t3lib_pageSelect
+     */
+    private static function setPageSelect()
+    {
+        $GLOBALS['TSFE']->sys_page = t3lib_div::makeInstance('t3lib_pageSelect');
+        $GLOBALS['TSFE']->sys_page->versioningPreview = false;
+        $GLOBALS['TSFE']->sys_page->versioningWorkspaceId = false;
+        $GLOBALS['TSFE']->where_hid_del = ' AND pages.deleted=0';
+        $GLOBALS['TSFE']->sys_page->init(false);
+        $GLOBALS['TSFE']->sys_page->where_hid_del .= ' AND pages.doktype<200';
+        $GLOBALS['TSFE']->sys_page->where_groupAccess =
+        $GLOBALS['TSFE']->sys_page->getMultipleGroupsWhereClause('pages.fe_group', 'pages');
+    }
+
+    /**
+     * Initializes TypoScript templating
+     */
+    private static function setTypoScript()
+    {
+        $typoScriptSetup = array();
+        $template = t3lib_div::makeInstance('t3lib_TStemplate');
+        $template->tt_track = 0;
+        $template->init();
+        $template->getFileName_backPath = PATH_site;
+        $GLOBALS['TSFE']->tmpl = $template;
+        $GLOBALS['TSFE']->tmpl->setup = $typoScriptSetup;
+        $GLOBALS['TSFE']->config = $typoScriptSetup;
+    }
+
+    /**
+     * Initializes global charset helpers
+     */
+    private static function setCharSet()
+    {
+        // preparing csConvObj
+        if (!is_object($GLOBALS['TSFE']->csConvObj)) {
+            if (is_object($GLOBALS['LANG'])) {
+                $GLOBALS['TSFE']->csConvObj = $GLOBALS['LANG']->csConvObj;
+
+            } else {
+                $GLOBALS['TSFE']->csConvObj = t3lib_div::makeInstance('t3lib_cs');
+            }
+        }
+
+        // preparing renderCharset
+        if (!is_object($GLOBALS['TSFE']->renderCharset)) {
+            if (is_object($GLOBALS['LANG'])) {
+                $GLOBALS['TSFE']->renderCharset = $GLOBALS['LANG']->charSet;
+
+            } else {
+                $GLOBALS['TSFE']->renderCharset = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
+            }
+        }
+    }
+
+    /**
+     * Resets the current working directory to the TYPO3 installation path
+     */
+    private static function setWorkingDir()
+    {
+        chdir(PATH_site);
+    }
+
+    /**
+     * Sets a fake time tracker
+     */
+    private static function setTimeTracker()
+    {
+        if (!is_object($GLOBALS['TT'])) {
+            $GLOBALS['TT'] = t3lib_div::makeInstance('t3lib_TimeTrackNull');
+        }
+    }
+
+    /**
+     * Sets $GLOBALS['TSFE']
+     */
+    private static function setTsfe()
+    {
+        // TODO: Third param allows setting the current page id
+        // TODO: Fourth param allows setting cache / no_cache
+        $GLOBALS['TSFE'] = t3lib_div::makeInstance('tslib_fe', $GLOBALS['TYPO3_CONF_VARS'], 0, 0);
+        // $GLOBALS['TSFE']  = new stdClass();
+        $GLOBALS['TSFE']->cObjectDepthCounter = 100;
+        $GLOBALS['TSFE']->baseUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL');
+    }
+}
+
 
 $cliObj = t3lib_div::makeInstance('rtp_cli');
 $cliObj->cli_main($_SERVER['argv']);
