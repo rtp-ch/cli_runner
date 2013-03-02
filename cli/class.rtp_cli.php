@@ -353,6 +353,7 @@ class FrontendEnvironment
     /**
      * @param array $data
      * @param string $table
+     * @see tslib_fe::newCobj
      */
     private static function setContentObject(array $data = array(), $table = '')
     {
