@@ -5,8 +5,8 @@ if (!defined('TYPO3_MODE')) {
 }
 
 // Registers the CLI script
-$TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']['runner'] = array(
-    'EXT:rtp_cli/cli/class.rtp_cli.php',
+$TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']['cli_runner'] = array(
+    'EXT:cli_runner/Classes/Cli/Runner.php',
     '_CLI_lowlevel'
 );
 

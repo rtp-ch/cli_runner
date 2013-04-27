@@ -1,12 +1,12 @@
 <?php
-namespace RTP\RtpCli\Cli;
+namespace RTP\CliRunner\Cli;
 
 use BadMethodCallException;
 use Exception;
 use ReflectionMethod;
-use RTP\RtpCli\Utility\File as File;
-use RTP\RtpCli\Service\Frontend as Frontend;
-use RTP\RtpCli\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Utility\File as File;
+use RTP\CliRunner\Service\Frontend as Frontend;
+use RTP\CliRunner\Service\Compatibility as Compatibility;
 
 if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');
@@ -14,33 +14,33 @@ if (!defined('TYPO3_cliMode')) {
 
 /**
  * Class Cli
- * @package RTP\RtpCli
+ * @package RTP\CliRunner
  */
 class Runner extends \t3lib_cli
 {
 
     /**
-     * @var \RTP\RtpCli\Command\Method
+     * @var \RTP\CliRunner\Command\Method
      */
     private $method;
 
     /**
-     * @var \RTP\RtpCli\Command\Qlass
+     * @var \RTP\CliRunner\Command\Qlass
      */
     private $qlass;
 
     /**
-     * @var \RTP\RtpCli\Command\Arguments
+     * @var \RTP\CliRunner\Command\Arguments
      */
     private $arguments;
 
     /**
-     * @var \RTP\RtpCli\Command\Export
+     * @var \RTP\CliRunner\Command\Export
      */
     private $export;
 
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 
@@ -50,7 +50,7 @@ class Runner extends \t3lib_cli
     private $result;
 
     /**
-     * @var \RTP\RtpCli\Utility\Console
+     * @var \RTP\CliRunner\Utility\Console
      */
     private $console;
 
@@ -60,8 +60,8 @@ class Runner extends \t3lib_cli
      */
     public function cli_main($options)
     {
-        $this->options = Compatibility::makeInstance('\RTP\RtpCli\Options', $options);
-        $this->console = Compatibility::makeInstance('\RTP\RtpCli\Console', $options);
+        $this->options = Compatibility::makeInstance('\RTP\CliRunner\Options', $options);
+        $this->console = Compatibility::makeInstance('\RTP\CliRunner\Console', $options);
 
         // Prints the help message if requested
         if ($this->options->has('help')) {
@@ -104,7 +104,7 @@ class Runner extends \t3lib_cli
         // [3] Set the arguments to pass to the method
         // ===========================================
         try {
-            $this->arguments = Compatibility::makeInstance('\RTP\RtpCli\Arguments', $this->options);
+            $this->arguments = Compatibility::makeInstance('\RTP\CliRunner\Arguments', $this->options);
             $this->arguments->set();
 
         } catch (Exception $e) {
@@ -122,7 +122,7 @@ class Runner extends \t3lib_cli
          * or class instance
          */
         try {
-            $this->qlass = Compatibility::makeInstance('\RTP\RtpCli\Qlass', $this->options);
+            $this->qlass = Compatibility::makeInstance('\RTP\CliRunner\Qlass', $this->options);
             $this->qlass->set();
 
         } catch (Exception $e) {
@@ -134,7 +134,7 @@ class Runner extends \t3lib_cli
         // [5] Set the method or function to invoke
         // ========================================
         try {
-            $this->method = Compatibility::makeInstance('\RTP\RtpCli\Method', $this->options, $this->qlass);
+            $this->method = Compatibility::makeInstance('\RTP\CliRunner\Method', $this->options, $this->qlass);
             $this->method->set();
 
         } catch (Exception $e) {
@@ -158,7 +158,7 @@ class Runner extends \t3lib_cli
         // ========================================
         try {
             $this->export = Compatibility::makeInstance(
-                '\RTP\RtpCli\Export',
+                '\RTP\CliRunner\Export',
                 $this->options,
                 $this->qlass,
                 $this->result
@@ -220,6 +220,6 @@ class Runner extends \t3lib_cli
     }
 }
 
-$cliObj = Compatibility::makeInstance('RTP\RtpCli\Cli');
+$cliObj = Compatibility::makeInstance('RTP\CliRunner\Cli');
 $cliObj->cli_main($_SERVER['argv']);
 

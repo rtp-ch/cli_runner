@@ -1,5 +1,5 @@
 <?php
-namespace RTP\RtpCli\Utility;
+namespace RTP\CliRunner\Utility;
 
 class Typo3
 {

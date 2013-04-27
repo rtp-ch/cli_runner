@@ -1,8 +1,8 @@
 <?php
-namespace RTP\RtpCli\Command;
+namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\RtpCli\Utility\File as File;
+use RTP\CliRunner\Utility\File as File;
 
 class Arguments
 {
@@ -12,7 +12,7 @@ class Arguments
     private $arguments = array();
 
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 

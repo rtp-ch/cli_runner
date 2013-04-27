@@ -1,9 +1,9 @@
 <?php
-namespace RTP\RtpCli\Command;
+namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\RtpCli\Utility\File as File;
-use RTP\RtpCli\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Utility\File as File;
+use RTP\CliRunner\Service\Compatibility as Compatibility;
 
 class Export
 {
@@ -13,12 +13,12 @@ class Export
     private $export;
 
     /**
-     * @var \RTP\RtpCli\Command\Qlass
+     * @var \RTP\CliRunner\Command\Qlass
      */
     private $qlass;
 
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 

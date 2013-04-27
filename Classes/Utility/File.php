@@ -1,8 +1,8 @@
 <?php
-namespace RTP\RtpCli\Utility;
+namespace RTP\CliRunner\Utility;
 
 use BadMethodCallException;
-use RTP\RtpCli\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Service\Compatibility as Compatibility;
 
 class File
 {

@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************
- * Extension Manager/Repository config file for ext "rtp_cli".
+ * Extension Manager/Repository config file for ext "cli_runner".
  *
  * Auto generated 08-12-2012 09:55
  *
@@ -10,8 +10,8 @@
  * writing. "version" and "dependencies" must not be touched!
  ***************************************************************/
 
-$EM_CONF['rtp_cli'] = array(
-    'title' => 'TYPO3 Runner',
+$EM_CONF['cli_runner'] = array(
+    'title' => 'Cli Runner',
     'description' => 'Provides a lightweight cli entry point for executing TYPO3 methods/functions.',
     'category' => 'misc',
     'author' => 'Simon Tuck',
@@ -29,7 +29,7 @@ $EM_CONF['rtp_cli'] = array(
     'clearCacheOnLoad' => 0,
     'lockType' => '',
     'author_company' => '',
-    'version' => '1.3.0',
+    'version' => '2.0.0-alpha.1',
     'constraints' => array(
         'depends' => array(
             'typo3' => '4.3.0-'

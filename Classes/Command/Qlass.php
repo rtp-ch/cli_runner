@@ -1,10 +1,10 @@
 <?php
-namespace RTP\RtpCli\Command;
+namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\RtpCli\Utility\File as File;
-use RTP\RtpCli\Utility\Typo3 as Typo3;
-use RTP\RtpCli\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Utility\File as File;
+use RTP\CliRunner\Utility\Typo3 as Typo3;
+use RTP\CliRunner\Service\Compatibility as Compatibility;
 
 class Qlass
 {
@@ -14,7 +14,7 @@ class Qlass
     private $qlass;
 
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 

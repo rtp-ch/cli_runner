@@ -1,10 +1,10 @@
 <?php
-namespace RTP\RtpCli\Utility;
+namespace RTP\CliRunner\Utility;
 
 class Console
 {
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 

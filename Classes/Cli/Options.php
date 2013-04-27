@@ -1,5 +1,5 @@
 <?php
-namespace RTP\RtpCli\Cli;
+namespace RTP\CliRunner\Cli;
 
 class Options
 {

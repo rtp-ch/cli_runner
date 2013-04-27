@@ -1,8 +1,8 @@
 <?php
-namespace RTP\RtpCli\Command;
+namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\RtpCli\Utility\File as File;
+use RTP\CliRunner\Utility\File as File;
 use ReflectionClass;
 
 class Method
@@ -13,12 +13,12 @@ class Method
     private $method;
 
     /**
-     * @var \RTP\RtpCli\Command\Qlass
+     * @var \RTP\CliRunner\Command\Qlass
      */
     private $qlass;
 
     /**
-     * @var \RTP\RtpCli\Cli\Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 

@@ -1,5 +1,5 @@
 <?php
-namespace RTP\RtpCli\Service;
+namespace RTP\CliRunner\Service;
 
 class Compatibility
 {
