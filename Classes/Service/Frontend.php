@@ -1,7 +1,7 @@
 <?php
-namespace RTP\RtpCli;
+namespace RTP\RtpCli\Service;
 
-use t3lib_div;
+use RTP\RtpCli\Service\Compatibility as Compatibility;
 
 if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');
@@ -39,7 +39,7 @@ class Frontend
      */
     private static function setContentObject(array $data = array(), $table = '')
     {
-        $GLOBALS['TSFE']->cObj = t3lib_div::makeInstance('tslib_cObj');
+        $GLOBALS['TSFE']->cObj = Compatibility::makeInstance('tslib_cObj');
         $GLOBALS['TSFE']->cObj->start($data, $table);
     }
 
@@ -48,7 +48,7 @@ class Frontend
      */
     private static function setPageSelect()
     {
-        $GLOBALS['TSFE']->sys_page = t3lib_div::makeInstance('t3lib_pageSelect');
+        $GLOBALS['TSFE']->sys_page = Compatibility::makeInstance('t3lib_pageSelect');
         $GLOBALS['TSFE']->sys_page->versioningPreview = false;
         $GLOBALS['TSFE']->sys_page->versioningWorkspaceId = false;
         $GLOBALS['TSFE']->where_hid_del = ' AND pages.deleted=0';
@@ -84,7 +84,7 @@ class Frontend
                 $GLOBALS['TSFE']->csConvObj = $GLOBALS['LANG']->csConvObj;
 
             } else {
-                $GLOBALS['TSFE']->csConvObj = t3lib_div::makeInstance('t3lib_cs');
+                $GLOBALS['TSFE']->csConvObj = Compatibility::makeInstance('t3lib_cs');
             }
         }
 
@@ -113,7 +113,7 @@ class Frontend
     private static function setTimeTracker()
     {
         if (!is_object($GLOBALS['TT'])) {
-            $GLOBALS['TT'] = t3lib_div::makeInstance('t3lib_TimeTrackNull');
+            $GLOBALS['TT'] = Compatibility::makeInstance('t3lib_TimeTrackNull');
         }
     }
 
@@ -122,7 +122,7 @@ class Frontend
      */
     private static function setTsfe($pageId = 0, $noCache = 0)
     {
-        $GLOBALS['TSFE'] = t3lib_div::makeInstance('tslib_fe', $GLOBALS['TYPO3_CONF_VARS'], $pageId, $noCache);
+        $GLOBALS['TSFE'] = Compatibility::makeInstance('tslib_fe', $GLOBALS['TYPO3_CONF_VARS'], $pageId, $noCache);
         $GLOBALS['TSFE']->beUserLogin = false;
         $GLOBALS['TSFE']->cObjectDepthCounter = 100;
         $GLOBALS['TSFE']->workspacePreview = '';
@@ -131,7 +131,7 @@ class Frontend
         $GLOBALS['TSFE']->initTemplate();
         $GLOBALS['TSFE']->config = array();
         $GLOBALS['TSFE']->tmpl->getFileName_backPath = PATH_site;
-        $GLOBALS['TSFE']->baseUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL');
+        $GLOBALS['TSFE']->baseUrl = Compatibility::getIndpEnv('TYPO3_SITE_URL');
     }
 }
 

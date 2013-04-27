@@ -1,9 +1,8 @@
 <?php
-namespace RTP\RtpCli;
+namespace RTP\RtpCli\Utility;
 
 use BadMethodCallException;
-use t3lib_div;
-use t3lib_extMgm;
+use RTP\RtpCli\Service\Compatibility as Compatibility;
 
 class File
 {
@@ -17,6 +16,8 @@ class File
     );
 
     /**
+     * Includes the given file.
+     *
      * @param $file
      */
     public static function load($file)
@@ -25,16 +26,31 @@ class File
     }
 
     /**
+     * If the incoming string has a file extension which matches any of the valid file types
+     * then the argument is considered to be a file.
+     *
      * @param $file
      * @return bool
      */
-    public static function isPhp($file)
+    public static function isValid($file)
     {
         $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         return in_array($fileExt, self::$validFileTypes);
     }
 
     /**
+     * Returns the list of valid file types
+     *
+     * @return array
+     */
+    public static function getValidTypes()
+    {
+        return self::$validFileTypes;
+    }
+
+    /**
+     * Attempts to resolve the path to a file using a variety of strategies.
+     *
      * @param $file
      * @return string
      * @throws BadMethodCallException
@@ -44,11 +60,11 @@ class File
         $path = $file;
 
         if (!is_file($file) || !is_readable($file)) {
-            $path = t3lib_div::getFileAbsFileName($file);
+            $path = Compatibility::getFileAbsFileName($file);
         }
 
         if (!is_file($path) || !is_readable($path)) {
-            $path = t3lib_div::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $file);
+            $path = Compatibility::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $file);
         }
 
         if (!is_file($path) || !is_readable($path)) {
