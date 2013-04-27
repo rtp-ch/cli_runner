@@ -125,7 +125,7 @@ class Method
      */
     public function signature()
     {
-        return ($this->qlass->has() ? $this->qlass->name() . $this->operator() : '') . $this->name();
+        return ($this->qlass->has() ? $this->qlass->name() . $this->operator() : '') . $this->get();
     }
 
     /**
@@ -140,7 +140,7 @@ class Method
             $isStatic = false;
 
             if ($this->qlass->has()) {
-                $method = new ReflectionMethod($this->qlass->name(), $this->get());
+                $method = new \ReflectionMethod($this->qlass->name(), $this->get());
 
                 if ($method->isStatic()) {
                     $isStatic = true;

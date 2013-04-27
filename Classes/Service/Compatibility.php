@@ -164,7 +164,7 @@ class Compatibility
             );
 
         } else {
-            return call_user_func(array('t3lib_extMgm', 'getIndpEnv'), $key, $script);
+            return call_user_func(array('t3lib_extMgm', 'extPath'), $key, $script);
         }
     }
 }

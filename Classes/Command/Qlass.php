@@ -80,9 +80,9 @@ class Qlass
      */
     public function set()
     {
-        if (isset($__class)) {
+        if (isset($GLOBALS['_cli_class'])) {
             // If the class has already been defined set it from the $__class variable
-            $this->qlass =& $__class;
+            $this->qlass =& $GLOBALS['_cli_class'];
 
         } elseif ($this->options->has('class')) {
             if (File::isValid($this->options->get('class'))) {
@@ -90,30 +90,30 @@ class Qlass
                 // should be included in a variable $__class in the file which is being loaded.
                 // The $__class variable can be a string pointing to the class name or an instance
                 // of the class.
-                File::load($this->options['class']);
+                File::load($this->options->get('class'));
 
-                // Must be exposed in a variable called $__class.
+                // Must be exposed in a global variable called $__class.
                 if (isset($__class)) {
-                    $this->qlass =& $__class;
+                    $this->qlass =& $GLOBALS['_cli_class'];
 
                 } else {
-                    $msg = 'Missing $__class variable in "' . $this->options['class'] . '"!';
+                    $msg = 'Missing global variable _cli_class variable in "' . $this->options->get('class') . '"!';
                     throw new BadMethodCallException($msg, 1364487850);
                 }
 
-            } elseif (is_object($GLOBALS[$this->options['class']])) {
+            } elseif (is_object($GLOBALS[$this->options->get('class')])) {
                 // If the argument points to a global, such as TSFE then use that as the class instance
-                $this->qlass = $GLOBALS[$this->options['class']];
+                $this->qlass = $GLOBALS[$this->options->get('class')];
 
-            } elseif (strpos($this->options['class'], '|')) {
+            } elseif (strpos($this->options->get('class'), '|')) {
                 // Attempts to resolve the argument to a global variable when the input string defines array keys separated
                 // by "|" Example: "TSFE|cObj" will return the value $GLOBALS['TSFE']->cObj
                 // @see tslib_cObj::getGlobal
-                $this->qlass = Typo3::getGlobal($this->options['class']);
+                $this->qlass = Typo3::getGlobal($this->options->get('class'));
 
             } else {
                 // Finally the argument is assumed to the class name
-                $this->qlass = $this->options['class'];
+                $this->qlass = $this->options->get('class');
             }
         }
     }

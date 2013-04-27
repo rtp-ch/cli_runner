@@ -65,7 +65,7 @@ class Options
      */
     public function get($option = null)
     {
-        if (is_null($option)) {
+        if (!is_null($option)) {
             return $this->has($option) ? $this->options[$option] : null;
 
         } else {

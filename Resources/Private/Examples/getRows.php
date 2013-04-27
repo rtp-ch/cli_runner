@@ -1,5 +1,7 @@
 <?php
 
+global $_cli_arguments;
+
 $selectFields = 'uid,pid,title';
 $fromTable = 'pages';
 $whereClause = '1 = 1' . $GLOBALS['TSFE']->sys_page->enableFields($fromTable);
@@ -10,7 +12,7 @@ $uidIndexField = 'uid';
 
 $GLOBALS['TYPO3_DB']->debugOutput = true;
 
-$args = array(
+$_cli_arguments = array(
     $selectFields,
     $fromTable,
     $whereClause,
@@ -19,3 +21,4 @@ $args = array(
     $limit,
     $uidIndexField
 );
+

@@ -19,10 +19,11 @@ class File
      * Includes the given file.
      *
      * @param $file
+     * @return mixed
      */
     public static function load($file)
     {
-        require_once self::getPath($file);
+        return require_once self::getPath($file);
     }
 
     /**

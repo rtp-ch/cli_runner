@@ -26,30 +26,37 @@ class Arguments
 
     /**
      * Sets the arguments for the method call. The arguments are loaded from a PHP file which is
-     * defined in the command line option "args". The PHP file must include a variable called "$__args"
+     * defined in the command line option "args". The PHP file must include a global variable called "$_cli_arguments"
      * which is an array that contains the arguments that will be passed to the method.
      *
      * @throws BadMethodCallException
      */
     public function set()
     {
-        if ($this->options->has('args')) {
+        // Checks if the global has already been defined.
+        if (isset($GLOBALS['_cli_arguments'])) {
+            $this->arguments =& $GLOBALS['_cli_arguments'];
 
-            // "args" must point to a PHP file which contains a variable $__args.
+        } else if ($this->options->has('args')) {
+            // Loads any PHP file which has been defined in the command line option args
             if (File::isValid($this->options->get('args'))) {
-                File::load($this->options->get('args'));
+                $args = File::load($this->options->get('args'));
 
-                if (isset($__args)) {
-                    $this->arguments =& (array) $__args;
+                if (is_array($args)) {
+                    // If the loaded file returned an array then that is assumed to be the arguments
+                    $this->arguments = $args;
+
+                } else if (isset($GLOBALS['_cli_arguments'])) {
+                    $this->arguments =& $GLOBALS['_cli_arguments'];
 
                 } else {
-                    $msg = 'Missing $__args variable in "' . $this->options->get('args') . '"!';
+                    $msg = 'Could not retrieve method arguments from "' . $this->options->get('args') . '". ';
                     throw new BadMethodCallException($msg, 1364419871);
                 }
 
             } else {
-                $msg  = 'Invalid file type "' . $this->options->get('args') . '"!';
-                $msg .= 'File must have one of the following extensions: ' . implode(',', File::getValidTypes());
+                $msg  = 'Invalid file type "' . $this->options->get('args') . '"! ';
+                $msg .= 'File must have one of the following extensions: ' . implode(', ', File::getValidTypes());
                 throw new BadMethodCallException($msg, 1364419931);
             }
         }
