@@ -28,22 +28,53 @@ class Console
         }
 
         self::subheadline('Arguments:');
-        print_r($arguments);
+        self::dump($arguments);
         self::border($border);
 
         self::subheadline('Output:');
-        print_r($output);
+        self::dump($output);
         self::border($border);
         
         exit;
     }
 
+    /**
+     * # Dump Variable
+     * var_dumps a variable
+     *
+     * @param $variable
+     */
+    private static function dump($variable)
+    {
+        if (is_scalar($variable)) {
+            echo $variable . PHP_EOL;
+
+        } elseif (is_array($variable)) {
+            print_r($variable);
+
+        } else if (is_object($variable)) {
+            print_r(json_decode(json_encode($variable)), true);
+        }
+    }
+
+    /**
+     * # Subheadline
+     * Prints an underlined heading
+     *
+     * @param $subheadline
+     */
     private static function subheadline($subheadline)
     {
         echo PHP_EOL . $subheadline . PHP_EOL;
         echo str_repeat('-', strlen($subheadline)) . PHP_EOL . PHP_EOL;
     }
 
+    /**
+     * # Border
+     * Prints a line of "="s
+     *
+     * @param $border
+     */
     private static function border($border)
     {
         echo PHP_EOL . $border . PHP_EOL;

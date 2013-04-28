@@ -57,7 +57,7 @@ class Export
         // Option #1 is if the global variable $_cli_export has already been defined (e.g. from a PHP file which
         // has already been included).
         if (isset($GLOBALS['_cli_export'])) {
-            $this->export =& ${$GLOBALS['_cli_export']};
+            $this->export =& $GLOBALS['_cli_export'];
 
         } else if ($this->options->has('export')) {
 
@@ -67,7 +67,7 @@ class Export
                 // Include the file and check for the global variable ```$_cli_export```
                 File::load($this->options->get('export'));
                 if (isset($GLOBALS['_cli_export'])) {
-                    $this->export =& ${$GLOBALS['_cli_export']};
+                    $this->export =& $GLOBALS['_cli_export'];
 
                 } else {
                     $msg = 'Missing $_cli_export variable in "' . $this->options->get('export') . '"!';
