@@ -6,6 +6,10 @@ use RTP\CliRunner\Utility\File as File;
 use RTP\CliRunner\Utility\Typo3 as Typo3;
 use RTP\CliRunner\Service\Compatibility as Compatibility;
 
+/**
+ * Class Qlass
+ * @package RTP\CliRunner\Command
+ */
 class Qlass
 {
     /**
@@ -19,6 +23,9 @@ class Qlass
     private $options;
 
     /**
+     * # Constructor
+     * Gets an instance of the command line options handler
+     *
      * @param $options
      */
     public function __construct($options)
@@ -27,7 +34,8 @@ class Qlass
     }
 
     /**
-     * Checks if the class has been defined
+     * # Has Class
+     * Checks for availability of a class
      *
      * @return bool
      */
@@ -37,9 +45,10 @@ class Qlass
     }
 
     /**
+     * # Class Name
      * Returns the class name
      *
-     * @return mixed|string
+     * @return string
      */
     public function name()
     {
@@ -52,9 +61,10 @@ class Qlass
     }
 
     /**
-     * Returns the class name or instance
+     * # Class
+     * Returns the class, either it's name or an instance
      *
-     * @return mixed
+     * @return string|object
      */
     public function get()
     {
@@ -62,7 +72,8 @@ class Qlass
     }
 
     /**
-     * Returns an instance of the class
+     * # Class Instance
+     * Returns an instance of the class, instantiates the class if no previous instance is available
      *
      * @return object
      */
@@ -76,24 +87,39 @@ class Qlass
     }
 
     /**
-     * Attempts to set the class name or instance from the arguments
+     * # Set Class Name or Instance
+     * Sets the name or instance of the class from the command line options. The command line option ```--class```
+     * can either define any of the following:
+     * - The name of the class, e.g. ```tx_meyext_pi1```
+     * - The path to a PHP file which, when included can do any of the following:
+     *      - Return the class name
+     *      - Return an instance of the class
+     *      - Define a global variable ```$_cli_class``` which contains the name or an instance of the class.
+     * - An instance of a global class such as ```$GLOBALS['TYPO3_DB']```
+     * - An instance of a class from the global scope, such as ```$GLOBALS['TSFE']->sys_page```
+     *
+     * @throws BadMethodCallException
      */
     public function set()
     {
+        // Option #1 is if the global variable $_cli_class has already been defined (e.g. from a PHP file which
+        // has already been included).
         if (isset($GLOBALS['_cli_class'])) {
-            // If the class has already been defined set it from the $__class variable
             $this->qlass =& $GLOBALS['_cli_class'];
 
         } elseif ($this->options->has('class')) {
-            if (File::isValid($this->options->get('class'))) {
-                // If the argument is a file then attempt to load the file. The class
-                // should be included in a variable $__class in the file which is being loaded.
-                // The $__class variable can be a string pointing to the class name or an instance
-                // of the class.
-                File::load($this->options->get('class'));
 
-                // Must be exposed in a global variable called $__class.
-                if (isset($__class)) {
+            // Option #2 is to include a PHP file which defines the class
+            if (File::isValid($this->options->get('class'))) {
+
+                // Option #2a is to return the class as a string (class name) or object (class instance) from
+                // the included PHP file
+                $class = File::load($this->options->get('class'));
+                if (is_string($class) || is_object($class)) {
+                   $this->qlass = $class;
+
+                // Option #2b is to define a global variable ```$_cli_class``` in the included PHP file.
+                } else if (isset($GLOBALS['_cli_class'])) {
                     $this->qlass =& $GLOBALS['_cli_class'];
 
                 } else {
@@ -101,18 +127,18 @@ class Qlass
                     throw new BadMethodCallException($msg, 1364487850);
                 }
 
+            // Option #3 is to set the class from an existing global, for example ```--class TYPO3_DB```.
             } elseif (is_object($GLOBALS[$this->options->get('class')])) {
-                // If the argument points to a global, such as TSFE then use that as the class instance
-                $this->qlass = $GLOBALS[$this->options->get('class')];
+                $this->qlass =& $GLOBALS[$this->options->get('class')];
 
+            // Option #4 is to set retrieve a class from the global scope similar to the TYPO3 getText functionality.
+            // For example ```TSFE|sys_page``` will retrieve the current instance of ```$GLOBALS['TSFE']->sys_page```
+            // (i.e. the global instance of t3lib_pageSelect).
             } elseif (strpos($this->options->get('class'), '|')) {
-                // Attempts to resolve the argument to a global variable when the input string defines array keys separated
-                // by "|" Example: "TSFE|cObj" will return the value $GLOBALS['TSFE']->cObj
-                // @see tslib_cObj::getGlobal
-                $this->qlass = Typo3::getGlobal($this->options->get('class'));
+                $this->qlass =& Typo3::getGlobal($this->options->get('class'));
 
+            // Option #5 is when the command line option is the class name.
             } else {
-                // Finally the argument is assumed to the class name
                 $this->qlass = $this->options->get('class');
             }
         }

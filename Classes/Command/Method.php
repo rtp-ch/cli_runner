@@ -4,7 +4,12 @@ namespace RTP\CliRunner\Command;
 use BadMethodCallException;
 use RTP\CliRunner\Utility\File as File;
 use ReflectionClass;
+use ReflectionMethod;
 
+/**
+ * Class Method
+ * @package RTP\CliRunner\Command
+ */
 class Method
 {
     /**
@@ -23,16 +28,19 @@ class Method
     private $options;
 
     /**
-     * @var Scope resolution operator
+     * @var string Scope resolution operator
      */
     const DOUBLE_COLON_OPERATOR = '::';
 
     /**
-     * @var Object operator
+     * @var string Object operator
      */
     const ARROW_OPERATOR = '->';
 
     /**
+     * # Constructor
+     * Gets an instance of the command line options and the class handler
+     *
      * @param $options
      * @param $qlass
      */
@@ -43,40 +51,66 @@ class Method
     }
 
     /**
+     * # Define the Method Name
+     * Sets the name of the function or method from the command line options. The command line option ```--method```
+     * can either define the method name or point to a PHP file. If it points to a PHP file the file must return
+     * the method name or define a global variable ```_cli_method```. For example:
+     *
+     *      $GLOBALS['_cli_method'] = 'exec_SELECTgetRows';
+     *
      * @throws BadMethodCallException
      */
     public function set()
     {
-        // If the method has already been defined set it from the $__method variable
-        if (isset($__method)) {
-            $this->method = (string) $__method;
+        // Option #1 is if the global variable $_cli_method has already been defined (e.g. from a PHP file which
+        // has already been included).
+        if (isset($GLOBALS['_cli_method'])) {
+            $this->method = (string) $GLOBALS['_cli_method'];
 
-        } elseif (File::isValid($this->options->get('method'))) {
-            // If the argument is a file then attempt to load the file. The method name
-            // should be included in a variable $__method in the file which is being loaded.
-            File::load($this->options->get('method'));
+        } else if ($this->options->has('method')) {
 
-            // Must be exposed in a variable called $__method.
-            if (isset($__method)) {
-                $this->method = (string) $__method;
+            // Option #2 is to include a PHP file which defines the method
+            if (File::isValid($this->options->get('method'))) {
 
+                // Option #2a is to return string (the method name) from the included PHP file
+                $method = File::load($this->options->get('method'));
+                if (is_string($method)) {
+                    $this->method = $method;
+
+                // Option #2b is to set the global variable _cli_method in the included PHP file
+                } else if (isset($GLOBALS['_cli_method'])) {
+                    $this->method = (string) $GLOBALS['_cli_method'];
+
+                } else {
+                    $msg = 'Missing $__method variable in "' . $this->options->get('method') . '"!';
+                    throw new BadMethodCallException($msg, 1366567236);
+                }
+
+            // Option #3 is when the command line option is the method name.
             } else {
-                $msg = 'Missing $__method variable in "' . $this->options->get('method') . '"!';
-                throw new BadMethodCallException($msg, 1366567236);
+                $this->method = $this->options->get('method');
             }
-
-        } else {
-            // Finally the argument is assumed to the method name
-            $this->method = $this->options->get('method');
         }
+    }
 
-        // Method is required
+    /**
+     * # Validate the Method
+     * Performs the following checks to verify the validity of the method:
+     * - A method name is required
+     * - If a class has been defined the method must belong to that class
+     * - If no class has been defined then the method must exist as a function
+     *
+     * @throws BadMethodCallException
+     */
+    public function isValid()
+    {
+        // [1.] Method is required!
         if (!$this->has()) {
             $msg = 'Missing required method name!';
             throw new BadMethodCallException($msg, 1354959022);
         }
 
-        // Checks that the given class has a corresponding method
+        // [2.] Checks that the given class has a corresponding method
         if ($this->qlass->has()) {
 
             $qlass = new ReflectionClass($this->qlass->get());
@@ -85,15 +119,16 @@ class Method
                 throw new BadMethodCallException($msg, 1354959172);
             }
 
+        // [3.] If no class was defined the method must exist as a function
         } elseif (!$this->qlass->has() && !function_exists($this->get())) {
-            // Or, if no class was defined, that the function exists
             $msg = 'Unknown function "' . $this->get() . '" or missing required class name!';
             throw new BadMethodCallException($msg, 1354958084);
         }
     }
 
     /**
-     * Checks if the class has been defined
+     * # Is Defined
+     * Checks if a method name has been defined
      *
      * @return bool
      */
@@ -103,9 +138,10 @@ class Method
     }
 
     /**
-     * Returns the class name or instance
+     * # Return the Method Name
+     * Returns the name of the method
      *
-     * @return mixed
+     * @return string
      */
     public function get()
     {
@@ -113,6 +149,9 @@ class Method
     }
 
     /**
+     * # Method Operator
+     * Returns the scope resolution or arrow operator depending on whether the method is static.
+     *
      * @return string
      */
     public function operator()
@@ -121,6 +160,9 @@ class Method
     }
 
     /**
+     * # Method Signature
+     * Returns a readable version of the method call, for example ```t3lib_db->exec_SELECTgetRows```
+     *
      * @return string
      */
     public function signature()
@@ -129,6 +171,9 @@ class Method
     }
 
     /**
+     * # Method Binding
+     * Returns true if the method is static.
+     *
      * @return bool
      */
     public function isStatic()
@@ -140,7 +185,7 @@ class Method
             $isStatic = false;
 
             if ($this->qlass->has()) {
-                $method = new \ReflectionMethod($this->qlass->name(), $this->get());
+                $method = new ReflectionMethod($this->qlass->name(), $this->get());
 
                 if ($method->isStatic()) {
                     $isStatic = true;

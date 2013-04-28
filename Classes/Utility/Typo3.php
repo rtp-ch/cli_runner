@@ -12,7 +12,7 @@ class Typo3
      *
      * @param string $keyString Global var key, eg. "HTTP_GET_VAR" or "HTTP_GET_VARS|id" to get
      *        the GET parameter "id" back.
-     * @return string|object|bool Whatever value. If none, then false.
+     * @return mixed Whatever value. If none, then false.
      */
     public static function getGlobal($keyString)
     {
@@ -38,6 +38,6 @@ class Typo3
             }
         }
 
-        return (is_scalar($value) || is_object($value)) ? $value : false;
+        return $value;
     }
 }

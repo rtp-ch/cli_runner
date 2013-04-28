@@ -59,11 +59,6 @@ class Runner
     private $options;
 
     /**
-     * @var mixed
-     */
-    private $result;
-
-    /**
      * @var \RTP\CliRunner\Utility\Console
      */
     private $console;
@@ -94,8 +89,6 @@ class Runner
         /**
          * [2] Include a PHP file.
          * =======================
-         * This can be any PHP file and could be used to include other files and/or
-         * declare global variables.
          */
         try {
             if ($this->options->has('file')) {
@@ -113,7 +106,7 @@ class Runner
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
             $this->console->message($msg);
         }
-echo '116' . PHP_EOL;
+
 
         // [3] Set the arguments to pass to the method
         // ===========================================
@@ -126,14 +119,10 @@ echo '116' . PHP_EOL;
             $this->console->message($msg);
         }
 
-echo '129';
+
         /**
          * [4] Set the class to instantiate
          * ================================
-         * @see http://wiki.typo3.org/TSref/getText#TSFE:.3Ckey.3E.5B.7C.3Csubkey.3E.5B.7C.3Csubsubkey.3E....5D.5D
-         * Resolves the class argument which can be a string (class name), a key pointing to a global property
-         * (e.g. TSFE|cObj) or a PHP file which, when included exposes a variable $__class which points to the class
-         * or class instance
          */
         try {
             $this->qlass = Compatibility::makeInstance('RTP\\CliRunner\\Command\\Qlass', $this->options);
@@ -150,17 +139,18 @@ echo '129';
         try {
             $this->method = Compatibility::makeInstance('RTP\\CliRunner\\Command\\Method', $this->options, $this->qlass);
             $this->method->set();
+            $this->method->isValid();
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
             $this->console->message($msg);
         }
 
-echo '159' . PHP_EOL;
+
         // [6] Execute the method
         // ======================
         try {
-            $this->execute();
+            $result = $this->execute();
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
@@ -175,7 +165,7 @@ echo '159' . PHP_EOL;
                 'RTP\\CliRunner\\Command\\Export',
                 $this->options,
                 $this->qlass,
-                $this->result
+                $result
             );
             $this->export->set();
 
@@ -183,8 +173,9 @@ echo '159' . PHP_EOL;
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
             $this->console->message($msg, $this->method->signature());
         }
-echo 'signature: ' . $this->method->signature() . PHP_EOL;
-        //
+
+        // [8] Dump the result to the console
+        // ==================================
         $this->console->message($this->export->get(), $this->method->signature());
     }
 
@@ -199,15 +190,17 @@ echo 'signature: ' . $this->method->signature() . PHP_EOL;
             $method->setAccessible(true);
 
             if ($this->method->isStatic()) {
-                $this->result = $method->invokeArgs(null, $this->arguments->get());
+                $result = $method->invokeArgs(null, $this->arguments->get());
 
             } else {
-                $this->result = $method->invokeArgs($this->qlass->instance(), $this->arguments->get());
+                $result = $method->invokeArgs($this->qlass->instance(), $this->arguments->get());
             }
 
         } else {
-            $this->result = call_user_func_array($this->method->get(), $this->arguments->get());
+            $result = call_user_func_array($this->method->get(), $this->arguments->get());
         }
+
+        return $result;
     }
 
     /**
