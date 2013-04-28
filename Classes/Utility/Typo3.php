@@ -5,6 +5,7 @@ class Typo3
 {
 
     /**
+     * # Global Variable
      * Return global variable where the input string $var defines array keys separated by "|"
      * Example: $var = "HTTP_SERVER_VARS | something" will return
      * the value $GLOBALS['HTTP_SERVER_VARS']['something'] value

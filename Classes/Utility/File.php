@@ -7,7 +7,7 @@ use RTP\CliRunner\Service\Compatibility as Compatibility;
 class File
 {
     /**
-     * @var array
+     * @var array List of allowed file types by extension
      */
     private static $validFileTypes = array(
         'php',
@@ -16,7 +16,7 @@ class File
     );
 
     /**
-     * Includes the given file.
+     * # Include a File
      *
      * @param $file
      * @return mixed
@@ -27,8 +27,8 @@ class File
     }
 
     /**
-     * If the incoming string has a file extension which matches any of the valid file types
-     * then the argument is considered to be a file.
+     * # Allowed File Type
+     * Compares the file extension of a given file against the list of allowed file extensions
      *
      * @param $file
      * @return bool
@@ -40,7 +40,7 @@ class File
     }
 
     /**
-     * Returns the list of valid file types
+     * # List of Allowed File Types
      *
      * @return array
      */
@@ -50,6 +50,7 @@ class File
     }
 
     /**
+     * # Path to File
      * Attempts to resolve the path to a file using a variety of strategies.
      *
      * @param $file

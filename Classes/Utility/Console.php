@@ -3,50 +3,56 @@ namespace RTP\CliRunner\Utility;
 
 class Console
 {
-    /**
-     * @var \RTP\CliRunner\Cli\Options
-     */
-    private $options;
 
     /**
-     * @param $options
-     */
-    public function __construct($options)
-    {
-        $this->options = $options;
-    }
-
-    /**
-     * @param $text
+     * # Print a Message
+     *
+     * @param mixed $output
+     * @param array $arguments
      * @param string $signature
+     * @param string $documentation
      */
-    public function message($text, $signature = '')
+    public static function message($output, array $arguments = array(), $signature = 'cli_runner', $documentation = '')
     {
-        if (strlen($signature)) {
-            $message     = 'Output of "' . $signature . '" with arguments:';
-        } else {
-            $message     = 'Output of cli_runner with arguments:';
+        $headline = 'Output of "' . $signature . '" with arguments';
+        $border = str_repeat('=', strlen($headline));
+
+        self::border($border);
+        echo $headline;
+        self::border($border);
+
+        if ($documentation) {
+            self::subheadline('Description:');
+            echo $result = preg_replace('/^\s+/im', ' ', $documentation);
+            self::border($border);
         }
 
-        $border = str_repeat('=', strlen($message));
-        echo "\n" . $border . "\n";
-        echo $message . "\n";
-        echo $border  . "\n\n";
+        self::subheadline('Arguments:');
+        print_r($arguments);
+        self::border($border);
 
-        print_r($this->options->get());
-
-        echo "\n" . $border . "\n\n";
-
-        print_r($text);
-
-        echo "\n\n" . $border . "\n";
+        self::subheadline('Output:');
+        print_r($output);
+        self::border($border);
+        
         exit;
+    }
+
+    private static function subheadline($subheadline)
+    {
+        echo PHP_EOL . $subheadline . PHP_EOL;
+        echo str_repeat('-', strlen($subheadline)) . PHP_EOL . PHP_EOL;
+    }
+
+    private static function border($border)
+    {
+        echo PHP_EOL . $border . PHP_EOL;
     }
 
     /**
      * Prints help message
      */
-    public function help()
+    public static function help()
     {
         $help  = '...' . PHP_EOL;
 

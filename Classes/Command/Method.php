@@ -4,6 +4,7 @@ namespace RTP\CliRunner\Command;
 use BadMethodCallException;
 use RTP\CliRunner\Utility\File as File;
 use ReflectionClass;
+use ReflectionFunction;
 use ReflectionMethod;
 
 /**
@@ -67,7 +68,7 @@ class Method
         if (isset($GLOBALS['_cli_method'])) {
             $this->method = (string) $GLOBALS['_cli_method'];
 
-        } else if ($this->options->has('method')) {
+        } elseif ($this->options->has('method')) {
 
             // Option #2 is to include a PHP file which defines the method
             if (File::isValid($this->options->get('method'))) {
@@ -78,7 +79,7 @@ class Method
                     $this->method = $method;
 
                 // Option #2b is to set the global variable _cli_method in the included PHP file
-                } else if (isset($GLOBALS['_cli_method'])) {
+                } elseif (isset($GLOBALS['_cli_method'])) {
                     $this->method = (string) $GLOBALS['_cli_method'];
 
                 } else {
@@ -168,6 +169,21 @@ class Method
     public function signature()
     {
         return ($this->qlass->has() ? $this->qlass->name() . $this->operator() : '') . $this->get();
+    }
+
+    /**
+     *
+     */
+    public function documentation()
+    {
+        if ($this->qlass->has()) {
+            $method = new ReflectionMethod($this->qlass->name(), $this->get());
+
+        } else {
+            $method = new ReflectionFunction($this->get());
+        }
+
+        return $method->getDocComment();
     }
 
     /**

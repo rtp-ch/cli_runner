@@ -4,6 +4,7 @@ namespace RTP\CliRunner\Cli;
 use BadMethodCallException;
 use Exception;
 use ReflectionMethod;
+use RTP\CliRunner\Utility\Console as Console;
 use RTP\CliRunner\Utility\File as File;
 use RTP\CliRunner\Service\Frontend as Frontend;
 use RTP\CliRunner\Service\Compatibility as Compatibility;
@@ -12,19 +13,22 @@ if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');
 }
 
-$extensionPath = \t3lib_extMgm::extPath('cli_runner');
-$extensionClassesPath = $extensionPath . 'Classes/';
+if(version_compare(TYPO3_version, '6.0.0', '<')) {
 
-require_once $extensionClassesPath . 'Cli/Options.php';
-require_once $extensionClassesPath . 'Command/Arguments.php';
-require_once $extensionClassesPath . 'Command/Export.php';
-require_once $extensionClassesPath . 'Command/Method.php';
-require_once $extensionClassesPath . 'Command/Qlass.php';
-require_once $extensionClassesPath . 'Service/Compatibility.php';
-require_once $extensionClassesPath . 'Service/Frontend.php';
-require_once $extensionClassesPath . 'Utility/Console.php';
-require_once $extensionClassesPath . 'Utility/File.php';
-require_once $extensionClassesPath . 'Utility/Typo3.php';
+    $extensionPath = \t3lib_extMgm::extPath('cli_runner');
+    $extensionClassesPath = $extensionPath . 'Classes/';
+
+    require_once $extensionClassesPath . 'Cli/Options.php';
+    require_once $extensionClassesPath . 'Command/Arguments.php';
+    require_once $extensionClassesPath . 'Command/Export.php';
+    require_once $extensionClassesPath . 'Command/Method.php';
+    require_once $extensionClassesPath . 'Command/Qlass.php';
+    require_once $extensionClassesPath . 'Service/Compatibility.php';
+    require_once $extensionClassesPath . 'Service/Frontend.php';
+    require_once $extensionClassesPath . 'Utility/Console.php';
+    require_once $extensionClassesPath . 'Utility/File.php';
+    require_once $extensionClassesPath . 'Utility/Typo3.php';
+}
 
 /**
  * Class Cli
@@ -59,22 +63,16 @@ class Runner
     private $options;
 
     /**
-     * @var \RTP\CliRunner\Utility\Console
-     */
-    private $console;
-
-    /**
      * @param $options
      * @throws BadMethodCallException
      */
     public function main($options)
     {
         $this->options = Compatibility::makeInstance('RTP\\CliRunner\\Cli\\Options', $options);
-        $this->console = Compatibility::makeInstance('RTP\\CliRunner\\Utility\\Console', $this->options);
 
         // Prints the help message if requested
         if ($this->options->has('help')) {
-            $this->console->help();
+            console::help();
             exit;
         }
 
@@ -104,7 +102,7 @@ class Runner
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg);
+            Console::message($msg, $this->options->get());
         }
 
 
@@ -116,7 +114,7 @@ class Runner
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg);
+            Console::message($msg, $this->options->get());
         }
 
 
@@ -130,20 +128,24 @@ class Runner
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg);
+            Console::message($msg, $this->options->get());
         }
 
 
         // [5] Set the method or function to invoke
         // ========================================
         try {
-            $this->method = Compatibility::makeInstance('RTP\\CliRunner\\Command\\Method', $this->options, $this->qlass);
+            $this->method = Compatibility::makeInstance(
+                'RTP\\CliRunner\\Command\\Method',
+                $this->options,
+                $this->qlass
+            );
             $this->method->set();
             $this->method->isValid();
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg);
+            Console::message($msg, $this->options->get());
         }
 
 
@@ -154,7 +156,7 @@ class Runner
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg, $this->method->signature());
+            Console::message($msg, $this->arguments->get(), $this->method->signature());
         }
 
 
@@ -171,12 +173,12 @@ class Runner
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            $this->console->message($msg, $this->method->signature());
+            Console::message($msg, $this->arguments->get(), $this->method->signature(), $this->method->documentation());
         }
 
         // [8] Dump the result to the console
         // ==================================
-        $this->console->message($this->export->get(), $this->method->signature());
+        Console::message($this->export->get(), $this->arguments->get(), $this->method->signature(), $this->method->documentation());
     }
 
     /**
@@ -227,6 +229,6 @@ class Runner
     }
 }
 
-$cliObj = \RTP\CliRunner\Service\Compatibility::makeInstance('RTP\\CliRunner\\Cli\\Runner');
+$cliObj = Compatibility::makeInstance('RTP\\CliRunner\\Cli\\Runner');
 $cliObj->main($_SERVER['argv']);
 
