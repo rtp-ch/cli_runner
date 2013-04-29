@@ -11,9 +11,15 @@ class Console
      * @param array $arguments
      * @param string $signature
      * @param string $documentation
+     * @param mixed $debug
      */
-    public static function message($output, array $arguments = array(), $signature = 'cli_runner', $documentation = '')
-    {
+    public static function message(
+        $output,
+        array $arguments = array(),
+        $signature = 'cli_runner',
+        $documentation = '',
+        $debug
+    ) {
         $headline = 'Output of "' . $signature . '" with arguments';
         $border = str_repeat('=', strlen($headline));
 
@@ -23,7 +29,7 @@ class Console
 
         if ($documentation) {
             self::subheadline('Description:');
-            echo $result = preg_replace('/^\s+/im', ' ', $documentation);
+            echo preg_replace('/^\s+/im', ' ', $documentation);
             self::border($border);
         }
 
@@ -34,7 +40,13 @@ class Console
         self::subheadline('Output:');
         self::dump($output);
         self::border($border);
-        
+
+        if ($debug) {
+            self::subheadline('Debug:');
+            self::dump($debug);
+            self::border($border);
+        }
+
         exit;
     }
 

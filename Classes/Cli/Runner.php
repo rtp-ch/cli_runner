@@ -20,7 +20,7 @@ if(version_compare(TYPO3_version, '6.0.0', '<')) {
 
     require_once $extensionClassesPath . 'Cli/Options.php';
     require_once $extensionClassesPath . 'Command/Arguments.php';
-    require_once $extensionClassesPath . 'Command/Export.php';
+    require_once $extensionClassesPath . 'Command/Debug.php';
     require_once $extensionClassesPath . 'Command/Method.php';
     require_once $extensionClassesPath . 'Command/Qlass.php';
     require_once $extensionClassesPath . 'Service/Compatibility.php';
@@ -53,9 +53,9 @@ class Runner
     private $arguments;
 
     /**
-     * @var \RTP\CliRunner\Command\Export
+     * @var \RTP\CliRunner\Command\Debug
      */
-    private $export;
+    private $debug;
 
     /**
      * @var \RTP\CliRunner\Cli\Options
@@ -160,25 +160,35 @@ class Runner
         }
 
 
-        // [7] Process the result
-        // ========================================
+        // [7] Process any debug settings
+        // ==============================
         try {
-            $this->export = Compatibility::makeInstance(
-                'RTP\\CliRunner\\Command\\Export',
+            $this->debug = Compatibility::makeInstance(
+                'RTP\\CliRunner\\Command\\Debug',
                 $this->options,
-                $this->qlass,
-                $result
+                $this->qlass
             );
-            $this->export->set();
+            $this->debug->set();
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            Console::message($msg, $this->arguments->get(), $this->method->signature(), $this->method->documentation());
+            Console::message(
+                $msg,
+                $this->arguments->get(),
+                $this->method->signature(),
+                $this->method->documentation()
+            );
         }
 
         // [8] Dump the result to the console
         // ==================================
-        Console::message($this->export->get(), $this->arguments->get(), $this->method->signature(), $this->method->documentation());
+        Console::message(
+            $result,
+            $this->arguments->get(),
+            $this->method->signature(),
+            $this->method->documentation(),
+            $this->debug->get()
+        );
     }
 
     /**

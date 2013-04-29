@@ -1,7 +1,7 @@
 <?php
 
 $fromTable = 'pages';
-$selectFields = '*';
+$selectFields = 'uid,pid,title';
 $uid = 1;
 
 $GLOBALS['_cli_arguments'] = array(
@@ -11,5 +11,8 @@ $GLOBALS['_cli_arguments'] = array(
 );
 
 $GLOBALS['TYPO3_DB']->debugOutput = true;
-$GLOBALS['_cli_export'] =& $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
+
+$GLOBALS['_cli_method'] = 'getRawRecord';
+$GLOBALS['_cli_class'] =& $GLOBALS['TSFE']->sys_page;
+$GLOBALS['_cli_debug'] =& $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
 

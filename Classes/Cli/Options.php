@@ -15,7 +15,7 @@ class Options
         'p' => 'page',
         'v' => 'env',
         'n' => 'no_cache',
-        'e' => 'export',
+        'd' => 'debug',
     );
 
     /**
