@@ -64,7 +64,7 @@ class Console
         } elseif (is_array($variable)) {
             print_r($variable);
 
-        } else if (is_object($variable)) {
+        } elseif (is_object($variable)) {
             print_r(json_decode(json_encode($variable)), true);
         }
     }

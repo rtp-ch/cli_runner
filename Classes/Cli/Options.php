@@ -16,6 +16,7 @@ class Options
         'v' => 'env',
         'n' => 'no_cache',
         'd' => 'debug',
+        's' => 'setup'
     );
 
     /**

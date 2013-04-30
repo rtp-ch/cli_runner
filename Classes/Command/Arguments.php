@@ -49,7 +49,7 @@ class Arguments
         if (isset($GLOBALS['_cli_arguments'])) {
             $this->arguments =& $GLOBALS['_cli_arguments'];
 
-        } else if ($this->options->has('args')) {
+        } elseif ($this->options->has('args')) {
 
             // Option #2 is to include a PHP file which defines the arguments
             if (File::isValid($this->options->get('args'))) {
@@ -59,7 +59,7 @@ class Arguments
                 if (is_array($arguments)) {
                     $this->arguments = $arguments;
 
-                } else if (isset($GLOBALS['_cli_arguments'])) {
+                } elseif (isset($GLOBALS['_cli_arguments'])) {
                     // Option #2 is to set the global variable _cli_arguments in the included PHP file
                     $this->arguments =& $GLOBALS['_cli_arguments'];
 

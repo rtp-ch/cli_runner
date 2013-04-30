@@ -45,22 +45,6 @@ class Qlass
     }
 
     /**
-     * # Class Name
-     * Returns the class name
-     *
-     * @return string
-     */
-    public function name()
-    {
-        if (is_object($this->get())) {
-            return get_class($this->get());
-
-        } else {
-            return $this->get();
-        }
-    }
-
-    /**
      * # Class
      * Returns the class, either it's name or an instance
      *
@@ -69,21 +53,6 @@ class Qlass
     public function get()
     {
         return $this->qlass;
-    }
-
-    /**
-     * # Class Instance
-     * Returns an instance of the class, instantiates the class if no previous instance is available
-     *
-     * @return object
-     */
-    public function instance()
-    {
-        if (!is_object($this->get())) {
-            $this->qlass = Compatibility::makeInstance($this->qlass);
-        }
-
-        return $this->get();
     }
 
     /**
@@ -102,24 +71,24 @@ class Qlass
      */
     public function set()
     {
-        // Option #1 is if the global variable $_cli_class has already been defined (e.g. from a PHP file which
+        // **Option #1** is if the global variable $_cli_class has already been defined (e.g. from a PHP file which
         // has already been included).
         if (isset($GLOBALS['_cli_class'])) {
             $this->qlass =& $GLOBALS['_cli_class'];
 
         } elseif ($this->options->has('class')) {
 
-            // Option #2 is to include a PHP file which defines the class
+            // **Option #2** is to include a PHP file which defines the class
             if (File::isValid($this->options->get('class'))) {
 
-                // Option #2a is to return the class as a string (class name) or object (class instance) from
+                // **Option #2a** is to return the class as a string (class name) or object (class instance) from
                 // the included PHP file
                 $class = File::load($this->options->get('class'));
                 if (is_string($class) || is_object($class)) {
-                   $this->qlass = $class;
+                    $this->qlass = $class;
 
-                // Option #2b is to define a global variable ```$_cli_class``` in the included PHP file.
-                } else if (isset($GLOBALS['_cli_class'])) {
+                } elseif (isset($GLOBALS['_cli_class'])) {
+                    // **Option #2b** is to define a global variable ```$_cli_class``` in the included PHP file.
                     $this->qlass =& $GLOBALS['_cli_class'];
 
                 } else {
@@ -127,18 +96,18 @@ class Qlass
                     throw new BadMethodCallException($msg, 1364487850);
                 }
 
-            // Option #3 is to set the class from an existing global, for example ```--class TYPO3_DB```.
             } elseif (is_object($GLOBALS[$this->options->get('class')])) {
+                // **Option #3** is to set the class from an existing global, for example ```--class TYPO3_DB```.
                 $this->qlass =& $GLOBALS[$this->options->get('class')];
 
-            // Option #4 is to set retrieve a class from the global scope similar to the TYPO3 getText functionality.
-            // For example ```TSFE|sys_page``` will retrieve the current instance of ```$GLOBALS['TSFE']->sys_page```
-            // (i.e. the global instance of t3lib_pageSelect).
             } elseif (strpos($this->options->get('class'), '|')) {
+                // **Option #4** is to set retrieve a class from the global scope similar to the TYPO3 getText
+                // functionality. For example ```TSFE|sys_page``` will retrieve the current instance of
+                // ```$GLOBALS['TSFE']->sys_page``` (i.e. the global instance of t3lib_pageSelect).
                 $this->qlass =& Typo3::getGlobal($this->options->get('class'));
 
-            // Option #5 is when the command line option is the class name.
             } else {
+                // **Option #5** is when the command line option is the class name.
                 $this->qlass = $this->options->get('class');
             }
         }

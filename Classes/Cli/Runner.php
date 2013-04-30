@@ -3,7 +3,7 @@ namespace RTP\CliRunner\Cli;
 
 use BadMethodCallException;
 use Exception;
-use ReflectionMethod;
+use RTP\CliRunner\Utility\Method as Method;
 use RTP\CliRunner\Utility\Console as Console;
 use RTP\CliRunner\Utility\File as File;
 use RTP\CliRunner\Service\Frontend as Frontend;
@@ -19,6 +19,7 @@ if(version_compare(TYPO3_version, '6.0.0', '<')) {
     $extensionClassesPath = $extensionPath . 'Classes/';
 
     require_once $extensionClassesPath . 'Cli/Options.php';
+    require_once $extensionClassesPath . 'Cli/Setup.php';
     require_once $extensionClassesPath . 'Command/Arguments.php';
     require_once $extensionClassesPath . 'Command/Debug.php';
     require_once $extensionClassesPath . 'Command/Method.php';
@@ -27,6 +28,8 @@ if(version_compare(TYPO3_version, '6.0.0', '<')) {
     require_once $extensionClassesPath . 'Service/Frontend.php';
     require_once $extensionClassesPath . 'Utility/Console.php';
     require_once $extensionClassesPath . 'Utility/File.php';
+    require_once $extensionClassesPath . 'Utility/Method.php';
+    require_once $extensionClassesPath . 'Utility/Qlass.php';
     require_once $extensionClassesPath . 'Utility/Typo3.php';
 }
 
@@ -58,6 +61,11 @@ class Runner
     private $debug;
 
     /**
+     * @var \RTP\CliRunner\Cli\Setup
+     */
+    private $setup;
+
+    /**
      * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
@@ -85,8 +93,8 @@ class Runner
 
 
         /**
-         * [2] Include a PHP file.
-         * =======================
+         * [2] Include a(ny) PHP file. Do what you like...
+         * ===============================================
          */
         try {
             if ($this->options->has('file')) {
@@ -106,7 +114,22 @@ class Runner
         }
 
 
-        // [3] Set the arguments to pass to the method
+        /**
+         * [3] Run setup code
+         * ==================
+         */
+        try {
+            $this->setup = Compatibility::makeInstance('RTP\\CliRunner\\Cli\\Setup', $this->options);
+            $this->setup->set();
+            $this->setup->run();
+
+        } catch (Exception $e) {
+            $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
+            Console::message($msg, $this->options->get());
+        }
+
+
+        // [4] Set the arguments to pass to the method
         // ===========================================
         try {
             $this->arguments = Compatibility::makeInstance('RTP\\CliRunner\\Command\\Arguments', $this->options);
@@ -119,7 +142,7 @@ class Runner
 
 
         /**
-         * [4] Set the class to instantiate
+         * [5] Set the class to instantiate
          * ================================
          */
         try {
@@ -132,16 +155,12 @@ class Runner
         }
 
 
-        // [5] Set the method or function to invoke
+        // [6] Set the method or function to invoke
         // ========================================
         try {
-            $this->method = Compatibility::makeInstance(
-                'RTP\\CliRunner\\Command\\Method',
-                $this->options,
-                $this->qlass
-            );
+            $this->method = Compatibility::makeInstance('RTP\\CliRunner\\Command\\Method', $this->options);
             $this->method->set();
-            $this->method->isValid();
+            Method::isValid($this->method->get(), $this->qlass->get());
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
@@ -149,18 +168,23 @@ class Runner
         }
 
 
-        // [6] Execute the method
+        // [7] Execute the method
         // ======================
         try {
-            $result = $this->execute();
+            $result = Method::execute($this->method->get(), $this->arguments->get(), $this->qlass->get());
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();
-            Console::message($msg, $this->arguments->get(), $this->method->signature());
+            Console::message(
+                $msg,
+                $this->arguments->get(),
+                Method::getSignature($this->method->get(), $this->qlass->get()),
+                Method::getDocumentation($this->method->get(), $this->qlass->get())
+            );
         }
 
 
-        // [7] Process any debug settings
+        // [8] Process any debug settings
         // ==============================
         try {
             $this->debug = Compatibility::makeInstance(
@@ -175,44 +199,21 @@ class Runner
             Console::message(
                 $msg,
                 $this->arguments->get(),
-                $this->method->signature(),
-                $this->method->documentation()
+                Method::getSignature($this->method->get(), $this->qlass->get()),
+                Method::getDocumentation($this->method->get(), $this->qlass->get())
             );
         }
 
-        // [8] Dump the result to the console
+
+        // [9] Dump the result to the console
         // ==================================
         Console::message(
             $result,
             $this->arguments->get(),
-            $this->method->signature(),
-            $this->method->documentation(),
+            Method::getSignature($this->method->get(), $this->qlass->get()),
+            Method::getDocumentation($this->method->get(), $this->qlass->get()),
             $this->debug->get()
         );
-    }
-
-    /**
-     * @return mixed
-     */
-    private function execute()
-    {
-        if ($this->qlass->has()) {
-
-            $method = new ReflectionMethod($this->qlass->get(), $this->method->get());
-            $method->setAccessible(true);
-
-            if ($this->method->isStatic()) {
-                $result = $method->invokeArgs(null, $this->arguments->get());
-
-            } else {
-                $result = $method->invokeArgs($this->qlass->instance(), $this->arguments->get());
-            }
-
-        } else {
-            $result = call_user_func_array($this->method->get(), $this->arguments->get());
-        }
-
-        return $result;
     }
 
     /**

@@ -57,7 +57,7 @@ class Debug
         if (isset($GLOBALS['_cli_debug'])) {
             $this->debug =& $GLOBALS['_cli_debug'];
 
-        } else if ($this->options->has('debug')) {
+        } elseif ($this->options->has('debug')) {
 
             // Option #2 is is to set the global variable _cli_debug in an included PHP file
             if (File::isValid($this->options->get('debug'))) {
@@ -74,7 +74,7 @@ class Debug
 
             // Option #3 is to retrieve the result from a static variable (e.g. ```tx_myext_pi1::someConst```)
             // defined in the debug command line option
-            } else if (strpos($this->options->get('debug'), '::')) {
+            } elseif (strpos($this->options->get('debug'), '::')) {
 
                 // Resolves the definition of the static variable
                 $exports = Compatibility::trimExplode('::', $this->options->get('debug'), true, 2);
@@ -87,12 +87,12 @@ class Debug
                 $this->debug = $property->getValue();
 
             // Option #4 is to debug an existing global, for example ```--debug TYPO3_DB```.
-            } else if (is_object($GLOBALS[$this->options->get('debug')])) {
+            } elseif (is_object($GLOBALS[$this->options->get('debug')])) {
                 $this->debug = $GLOBALS[$this->options->get('debug')];
 
             // Option #5 is to debug an item from the global scope similar to the TYPO3 getText functionality.
             // For example ```TSFE|id``` will retrieve the current page id.
-            } else if (strpos($this->options->get('debug'), '|')) {
+            } elseif (strpos($this->options->get('debug'), '|')) {
                 $this->debug = Typo3::getGlobal($this->options->get('debug'));
 
             // Option #6 is to assume the command line option ```--debug``` defines a property of the current class.
