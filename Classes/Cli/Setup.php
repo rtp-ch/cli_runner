@@ -66,7 +66,7 @@ class Setup
             $this->setup = $setupParts[1];
 
             if (File::isValid($setupFile)) {
-                File::load($this->options->get('setup'));
+                File::load($setupFile);
 
             } else {
                 $msg  = 'Invalid file type "' . $setupFile . '"! ';
@@ -104,7 +104,7 @@ class Setup
                 Method::execute($this->setup);
 
             } elseif (Method::methodExists('setUp', $this->setup)) {
-                Method::execute('setUp', $this->setup);
+                Method::execute('setUp', array(), $this->setup);
 
             } else {
                 $msg  = 'Cannot resolve a valid setup action from "' . $this->setup . '"!';
