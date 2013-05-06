@@ -18,7 +18,7 @@ class Console
         array $arguments = array(),
         $signature = 'cli_runner',
         $documentation = '',
-        $debug
+        $debug = false
     ) {
         $headline = 'Output of "' . $signature . '" with arguments';
         $border = str_repeat('=', strlen($headline));

@@ -98,7 +98,7 @@ class Setup
         if ($this->has()) {
             if (strstr($this->setup, Method::ARROW_OPERATOR) !== false) {
                 $setupParts = Compatibility::trimExplode(Method::ARROW_OPERATOR, $this->setup, true, 2);
-                Method::execute($setupParts[1], $setupParts[0]);
+                Method::execute($setupParts[1], array(), $setupParts[0]);
 
             } elseif (is_callable($this->setup)) {
                 Method::execute($this->setup);
