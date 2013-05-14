@@ -65,7 +65,14 @@ class Console
             print_r($variable);
 
         } elseif (is_object($variable)) {
-            print_r(json_decode(json_encode($variable)), true);
+            $dumpable = json_decode(json_encode($variable), true);
+
+            if (!empty($dumpable)) {
+                print_r($dumpable);
+
+            } else {
+                print_r($variable);
+            }
         }
     }
 

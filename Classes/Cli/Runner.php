@@ -192,7 +192,7 @@ class Runner
                 $this->options,
                 $this->qlass
             );
-            $this->debug->set();
+            $this->debug->set($result);
 
         } catch (Exception $e) {
             $msg = 'Exception #' . $e->getCode() . ': ' . $e->getMessage();

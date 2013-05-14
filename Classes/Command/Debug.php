@@ -48,14 +48,20 @@ class Debug
      * - A value from the global scope, such as ```$GLOBALS['TSFE']->id```
      * - A property of the class which the method that was executed was a member of
      *
+     * @param null $result
      * @throws \BadMethodCallException
      */
-    public function set()
+    public function set($result = null)
     {
         // Option #1 is if the global variable $_cli_debug has already been defined (e.g. from a PHP file which
         // has already been included).
         if (isset($GLOBALS['_cli_debug'])) {
-            $this->debug =& $GLOBALS['_cli_debug'];
+            if (is_callable($GLOBALS['_cli_debug'])) {
+                $this->debug = $GLOBALS['_cli_debug']($result);
+
+            } else {
+                $this->debug =& $GLOBALS['_cli_debug'];
+            }
 
         } elseif ($this->options->has('debug')) {
 
@@ -65,7 +71,12 @@ class Debug
                 // Include the file and check for the global variable ```$_cli_debug```
                 File::load($this->options->get('debug'));
                 if (isset($GLOBALS['_cli_debug'])) {
-                    $this->debug =& $GLOBALS['_cli_debug'];
+                    if (is_callable($GLOBALS['_cli_debug'])) {
+                        $this->debug = $GLOBALS['_cli_debug']($result);
+
+                    } else {
+                        $this->debug =& $GLOBALS['_cli_debug'];
+                    }
 
                 } else {
                     $msg = 'Missing $_cli_debug variable in "' . $this->options->get('debug') . '"!';
@@ -111,7 +122,16 @@ class Debug
      */
     public function get()
     {
-        return $this->debug;
+        // Executes the debug statement if it's a closure
+        if (is_callable($this->debug)) {
+            $GLOBALS['_cli_debug']();
+            echo '123' . PHP_EOL;
+            exit;
+
+        } else {
+            // Otherwise content of debug variable is returned as is
+            return $this->debug;
+        }
     }
 
     /**
