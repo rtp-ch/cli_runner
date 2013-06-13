@@ -124,9 +124,7 @@ class Debug
     {
         // Executes the debug statement if it's a closure
         if (is_callable($this->debug)) {
-            $GLOBALS['_cli_debug']();
-            echo '123' . PHP_EOL;
-            exit;
+            return $GLOBALS['_cli_debug']();
 
         } else {
             // Otherwise content of debug variable is returned as is
