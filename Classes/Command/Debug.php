@@ -2,6 +2,7 @@
 namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
+use ReflectionProperty;
 use RTP\CliRunner\Utility\File as File;
 use RTP\CliRunner\Utility\Typo3 as Typo3;
 use RTP\CliRunner\Service\Compatibility as Compatibility;
@@ -110,7 +111,7 @@ class Debug
             } else {
                 $property = new ReflectionProperty($this->qlass->get(), $this->options->get('debug'));
                 $property->setAccessible(true);
-                $this->debug = $property->getValue($this->qlass->instance());
+                $this->debug = $property->getValue($this->qlass->get());
             }
         }
     }
