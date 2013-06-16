@@ -3,11 +3,11 @@ namespace RTP\CliRunner\Cli;
 
 use BadMethodCallException;
 use Exception;
-use RTP\CliRunner\Utility\Method as Method;
-use RTP\CliRunner\Utility\Console as Console;
-use RTP\CliRunner\Utility\File as File;
-use RTP\CliRunner\Service\Frontend as Frontend;
-use RTP\CliRunner\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Utility\Method;
+use RTP\CliRunner\Utility\Console;
+use RTP\CliRunner\Utility\File;
+use RTP\CliRunner\Service\Frontend;
+use RTP\CliRunner\Service\Compatibility;
 
 if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');
@@ -89,8 +89,8 @@ class Runner
          * ===================================
          * Create an instance of tslib_fe
          */
-        Frontend::simulate($this->page(), $this->hasCache());
 
+         Frontend::simulate($this->page(), $this->hasCache());
 
         /**
          * [2] Include a(ny) PHP file. Do what you like...
