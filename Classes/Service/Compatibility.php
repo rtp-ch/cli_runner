@@ -137,7 +137,9 @@ class Compatibility
     public static function trimList($arr, $onlyNonEmptyValues = true)
     {
         if ($onlyNonEmptyValues) {
-            return array_filter(array_map('trim', $arr), 'strlen');
+            return array_filter(array_map(function ($member) {
+                return is_string($member) ? trim($member) : $member;
+            }, $arr), 'strlen');
 
         } else {
             return array_map('trim', $arr);
