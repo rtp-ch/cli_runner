@@ -24,6 +24,7 @@ if(version_compare(TYPO3_version, '6.0.0', '<')) {
     require_once $extensionClassesPath . 'Command/Debug.php';
     require_once $extensionClassesPath . 'Command/Method.php';
     require_once $extensionClassesPath . 'Command/Qlass.php';
+    require_once $extensionClassesPath . 'Scripts/Extension.php';
     require_once $extensionClassesPath . 'Service/Compatibility.php';
     require_once $extensionClassesPath . 'Service/Frontend.php';
     require_once $extensionClassesPath . 'Utility/Console.php';

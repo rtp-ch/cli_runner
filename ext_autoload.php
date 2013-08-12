@@ -13,6 +13,7 @@ if(version_compare(TYPO3_version, '6.0.0', '>=')) {
         'RTP\CliRunner\Command\Debug' => $extensionClassesPath . 'Command/Debug.php',
         'RTP\CliRunner\Command\Method' => $extensionClassesPath . 'Command/Method.php',
         'RTP\CliRunner\Command\Qlass' => $extensionClassesPath . 'Command/Qlass.php',
+        'RTP\CliRunner\Scripts\Extension' => $extensionClassesPath . 'Scripts/Extension.php',
         'RTP\CliRunner\Service\Compatibility' => $extensionClassesPath . 'Service/Compatibility.php',
         'RTP\CliRunner\Service\Frontend' => $extensionClassesPath . 'Service/Frontend.php',
         'RTP\CliRunner\Utility\Console' => $extensionClassesPath . 'Utility/Console.php',
