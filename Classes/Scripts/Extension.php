@@ -17,12 +17,18 @@ class Extension
 {
 
     /**
+     * Required to satisfy TYPO3's parentObj pattern
+     * @var \tx_em_Extensions_List
+     */
+    public $extensionList;
+
+    /**
      * Install an extension
      *
      * @param string $extKey Name of the extension to install.
      * @return bool
      */
-    public static function install($extKey)
+    public function install($extKey)
     {
         if (self::isLoaded($extKey)) {
             return true;
@@ -38,11 +44,11 @@ class Extension
             $installUtility->install($extKey);
 
         } else {
-            $extensionList = Compatibility::makeInstance('tx_em_Extensions_List');
-            list($inst_list,) = $extensionList->getInstalledExtensions();
-            $newExtList = $extensionList->addExtToList($extKey, $inst_list);
+            $this->extensionList = Compatibility::makeInstance('tx_em_Extensions_List');
+            list($inst_list,) = $this->extensionList->getInstalledExtensions();
+            $newExtList = $this->extensionList->addExtToList($extKey, $inst_list);
 
-            $install = Compatibility::makeInstance('tx_em_Install');
+            $install = Compatibility::makeInstance('tx_em_Install', $this);
             $install->setSilentMode(true);
             $install->writeNewExtensionList($newExtList);
 
