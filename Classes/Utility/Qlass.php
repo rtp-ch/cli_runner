@@ -1,7 +1,7 @@
 <?php
 namespace RTP\CliRunner\Utility;
 
-use RTP\CliRunner\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Service\Compatibility;
 
 /**
  * Class Qlass

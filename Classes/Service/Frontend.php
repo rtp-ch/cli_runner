@@ -1,7 +1,7 @@
 <?php
 namespace RTP\CliRunner\Service;
 
-use RTP\CliRunner\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Service\Compatibility;
 
 if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');

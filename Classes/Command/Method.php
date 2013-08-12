@@ -2,10 +2,7 @@
 namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\CliRunner\Utility\File as File;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionMethod;
+use RTP\CliRunner\Utility\File;
 
 /**
  * Class Method

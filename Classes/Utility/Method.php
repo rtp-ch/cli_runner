@@ -2,7 +2,7 @@
 namespace RTP\CliRunner\Utility;
 
 use BadMethodCallException;
-use RTP\CliRunner\Utility\Qlass as Qlass;
+use RTP\CliRunner\Utility\Qlass;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;

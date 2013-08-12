@@ -2,7 +2,7 @@
 namespace RTP\CliRunner\Utility;
 
 use BadMethodCallException;
-use RTP\CliRunner\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Service\Compatibility;
 
 class File
 {

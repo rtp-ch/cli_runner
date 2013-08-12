@@ -1,6 +1,12 @@
 <?php
 namespace RTP\CliRunner\Cli;
 
+/**
+ * Resolves CLI options
+ *
+ * Class Options
+ * @package RTP\CliRunner\Cli
+ */
 class Options
 {
     /**

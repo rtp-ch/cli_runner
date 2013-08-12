@@ -2,9 +2,9 @@
 namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\CliRunner\Utility\File as File;
-use RTP\CliRunner\Utility\Typo3 as Typo3;
-use RTP\CliRunner\Service\Compatibility as Compatibility;
+use RTP\CliRunner\Utility\File;
+use RTP\CliRunner\Utility\Typo3;
+use RTP\CliRunner\Service\Compatibility;
 
 /**
  * Class Qlass

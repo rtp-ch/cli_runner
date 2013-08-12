@@ -2,7 +2,8 @@
 namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\CliRunner\Utility\File as File;
+use RTP\CliRunner\Service\Compatibility;
+use RTP\CliRunner\Utility\File;
 
 /**
  * Class Arguments
@@ -60,18 +61,19 @@ class Arguments
                     $this->arguments = $arguments;
 
                 } elseif (isset($GLOBALS['_cli_arguments'])) {
-                    // Option #2 is to set the global variable _cli_arguments in the included PHP file
+                    // Option #2 is to set the arguments from any global variable _cli_arguments
+                    // in the included PHP file
                     $this->arguments =& $GLOBALS['_cli_arguments'];
 
                 } else {
-                    $msg = 'Could not retrieve method arguments from "' . $this->options->get('args') . '". ';
+                    $msg = 'Could not retrieve arguments from "' . $this->options->get('args') . '". ';
                     throw new BadMethodCallException($msg, 1364419871);
                 }
 
             } else {
-                $msg  = 'Invalid file type "' . $this->options->get('args') . '"! ';
-                $msg .= 'File must have one of the following extensions: ' . implode(', ', File::getValidTypes());
-                throw new BadMethodCallException($msg, 1364419931);
+                // Option #3 is to pass the arguments as a comma separated list of values, e.g.
+                // --args "foo|bar|42"
+                $this->arguments = explode('|', $this->options->get('args'));
             }
         }
     }
