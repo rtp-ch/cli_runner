@@ -44,16 +44,43 @@ class Extension
             $installUtility->install($extKey);
 
         } else {
+
             $this->extensionList = Compatibility::makeInstance('tx_em_Extensions_List');
-            list($inst_list,) = $this->extensionList->getInstalledExtensions();
-            $newExtList = $this->extensionList->addExtToList($extKey, $inst_list);
+            list($instList,) = $this->extensionList->getInstalledExtensions();
+            $newExtList = $this->extensionList->addExtToList($extKey, $instList);
 
             $install = Compatibility::makeInstance('tx_em_Install', $this);
             $install->setSilentMode(true);
             $install->writeNewExtensionList($newExtList);
+            $install->forceDBupdates($extKey, $instList[$extKey]);
 
-            \tx_em_Tools::refreshGlobalExtList();
-            $install->forceDBupdates($extKey, $inst_list[$extKey]);
+            if (isset($instList[$extKey]['EM_CONF']['createDirs'])) {
+
+                $createDirs = $instList[$extKey]['EM_CONF']['createDirs'];
+                $createDirs = array_unique(Compatibility::trimExplode(',', $createDirs));
+                foreach ($createDirs as $crDir) {
+                    if (!@is_dir(PATH_site . $crDir)) {
+
+                        // Initialize:
+                        $crDirStart = '';
+                        $dirs_in_path = explode('/', preg_replace('/\/$/', '', $crDir));
+
+                        // Traverse each part of the dir path and create it one-by-one:
+                        foreach ($dirs_in_path as $dirP) {
+                            if (strcmp($dirP, '')) {
+                                $crDirStart .= $dirP . '/';
+                                if (!@is_dir(PATH_site . $crDirStart)) {
+                                    \t3lib_div::mkdir(PATH_site . $crDirStart);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ($instList[$extKey]['EM_CONF']['uploadfolder']) {
+                \t3lib_div::mkdir_deep(PATH_site, \tx_em_Tools::uploadFolder($extKey));
+            }
         }
     }
 
