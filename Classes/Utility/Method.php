@@ -78,7 +78,7 @@ class Method
      * @param null|string|object $class
      * @return string
      */
-    public function getOperator($methodName, $class = null)
+    public static function getOperator($methodName, $class = null)
     {
         return self::isStatic($methodName, $class) ? self::DOUBLE_COLON_OPERATOR : self::ARROW_OPERATOR;
     }
