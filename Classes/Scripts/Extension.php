@@ -1,7 +1,7 @@
 <?php
 namespace RTP\CliRunner\Scripts;
 
-use RTP\CliRunner\Service\Compatibility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * #Provides command line access to extensions management.
@@ -25,6 +25,8 @@ class Extension
     /**
      * Install an extension
      *
+     * @todo DOES NOT WORK WITH TYPO3 6.2 (yet) required redevelopment
+     * @deprecated
      * @param string $extKey Name of the extension to install.
      * @return bool
      */
@@ -38,18 +40,18 @@ class Extension
 
             // @see tx_introduction_import_extension::enableExtension
             /** @var $objectManager \TYPO3\CMS\Extbase\Object\ObjectManager */
-            $objectManager = Compatibility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+            $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
             /** @var $installUtility \TYPO3\CMS\Extensionmanager\Utility\InstallUtility */
             $installUtility = $objectManager->get('TYPO3\\CMS\\Extensionmanager\\Utility\\InstallUtility');
             $installUtility->install($extKey);
 
         } else {
 
-            $this->extensionList = Compatibility::makeInstance('tx_em_Extensions_List');
+            $this->extensionList = GeneralUtility::makeInstance('tx_em_Extensions_List');
             list($instList,) = $this->extensionList->getInstalledExtensions();
             $newExtList = $this->extensionList->addExtToList($extKey, $instList);
 
-            $install = Compatibility::makeInstance('tx_em_Install', $this);
+            $install = GeneralUtility::makeInstance('tx_em_Install', $this);
             $install->setSilentMode(true);
             $install->writeNewExtensionList($newExtList);
             $install->forceDBupdates($extKey, $instList[$extKey]);
@@ -57,7 +59,7 @@ class Extension
             if (isset($instList[$extKey]['EM_CONF']['createDirs'])) {
 
                 $createDirs = $instList[$extKey]['EM_CONF']['createDirs'];
-                $createDirs = array_unique(Compatibility::trimExplode(',', $createDirs));
+                $createDirs = array_unique(GeneralUtility::trimExplode(',', $createDirs));
                 foreach ($createDirs as $crDir) {
                     if (!@is_dir(PATH_site . $crDir)) {
 
@@ -70,7 +72,7 @@ class Extension
                             if (strcmp($dirP, '')) {
                                 $crDirStart .= $dirP . '/';
                                 if (!@is_dir(PATH_site . $crDirStart)) {
-                                    \t3lib_div::mkdir(PATH_site . $crDirStart);
+                                    GeneralUtility::mkdir(PATH_site . $crDirStart);
                                 }
                             }
                         }
@@ -79,7 +81,7 @@ class Extension
             }
 
             if ($instList[$extKey]['EM_CONF']['uploadfolder']) {
-                \t3lib_div::mkdir_deep(PATH_site, \tx_em_Tools::uploadFolder($extKey));
+                GeneralUtility::mkdir_deep(PATH_site, \tx_em_Tools::uploadFolder($extKey));
             }
         }
     }

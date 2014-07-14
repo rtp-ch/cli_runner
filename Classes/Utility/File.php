@@ -2,7 +2,7 @@
 namespace RTP\CliRunner\Utility;
 
 use BadMethodCallException;
-use RTP\CliRunner\Service\Compatibility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class File
 {
@@ -62,11 +62,11 @@ class File
         $path = $file;
 
         if (!is_file($file) || !is_readable($file)) {
-            $path = Compatibility::getFileAbsFileName($file);
+            $path = GeneralUtility::getFileAbsFileName($file);
         }
 
         if (!is_file($path) || !is_readable($path)) {
-            $path = Compatibility::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $file);
+            $path = GeneralUtility::getFileAbsFileName(__DIR__ . DIRECTORY_SEPARATOR . $file);
         }
 
         if (!is_file($path) || !is_readable($path)) {

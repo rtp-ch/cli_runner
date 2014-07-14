@@ -5,6 +5,7 @@ namespace RTP\CliRunner\Cli;
  * Resolves CLI options
  *
  * Class Options
+ *
  * @package RTP\CliRunner\Cli
  */
 class Options
@@ -57,6 +58,7 @@ class Options
      * Checks if the given command line argument was set
      *
      * @param $option
+     *
      * @return bool
      */
     public function has($option)
@@ -68,6 +70,7 @@ class Options
      * Retrieves the value for the given command line argument
      *
      * @param $option
+     *
      * @return string|null
      */
     public function get($option = null)

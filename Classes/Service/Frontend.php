@@ -1,7 +1,8 @@
 <?php
 namespace RTP\CliRunner\Service;
 
-use RTP\CliRunner\Service\Compatibility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 if (!defined('TYPO3_cliMode')) {
     die('You cannot run this script directly!');
@@ -12,6 +13,10 @@ if (!defined('TYPO3_cliMode')) {
  */
 class Frontend
 {
+    /**
+     * @var TypoScriptFrontendController
+     */
+    protected static $TSFE;
 
     /**
      * Simulates a frontend environment. Inspired by various hacks for simulating the frontend in
@@ -34,13 +39,13 @@ class Frontend
     }
 
     /**
-     * @param array $data
+     * @param array  $data
      * @param string $table
      */
     private static function setContentObject(array $data = array(), $table = '')
     {
-        $GLOBALS['TSFE']->cObj = Compatibility::makeInstance('tslib_cObj');
-        $GLOBALS['TSFE']->cObj->start($data, $table);
+        self::$TSFE->cObj = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
+        self::$TSFE->cObj->start($data, $table);
     }
 
     /**
@@ -48,14 +53,15 @@ class Frontend
      */
     private static function setPageSelect()
     {
-        $GLOBALS['TSFE']->sys_page = Compatibility::makeInstance('t3lib_pageSelect');
-        $GLOBALS['TSFE']->sys_page->versioningPreview = false;
-        $GLOBALS['TSFE']->sys_page->versioningWorkspaceId = false;
-        $GLOBALS['TSFE']->where_hid_del = ' AND pages.deleted=0';
-        $GLOBALS['TSFE']->sys_page->init(false);
-        $GLOBALS['TSFE']->sys_page->where_hid_del .= ' AND pages.doktype<200';
-        $GLOBALS['TSFE']->sys_page->where_groupAccess =
-            $GLOBALS['TSFE']->sys_page->getMultipleGroupsWhereClause('pages.fe_group', 'pages');
+        self::$TSFE->sys_page = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Page\\PageRepository');
+
+        self::$TSFE->sys_page->versioningPreview     = false;
+        self::$TSFE->sys_page->versioningWorkspaceId = false;
+        self::$TSFE->where_hid_del                   = ' AND pages.deleted=0';
+        self::$TSFE->sys_page->init(false);
+        self::$TSFE->sys_page->where_hid_del .= ' AND pages.doktype<200';
+        self::$TSFE->sys_page->where_groupAccess =
+            self::$TSFE->sys_page->getMultipleGroupsWhereClause('pages.fe_group', 'pages');
     }
 
     /**
@@ -63,14 +69,14 @@ class Frontend
      */
     private static function setTypoScript()
     {
-        $GLOBALS['TSFE']->tmpl->runThroughTemplates(
-            $GLOBALS['TSFE']->sys_page->getRootLine($GLOBALS['TSFE']->id),
+        self::$TSFE->tmpl->runThroughTemplates(
+            self::$TSFE->sys_page->getRootLine(self::$TSFE->id),
             0
         );
-        $GLOBALS['TSFE']->tmpl->generateConfig();
-        $GLOBALS['TSFE']->tmpl->loaded = 1;
-        $GLOBALS['TSFE']->settingLanguage();
-        $GLOBALS['TSFE']->settingLocale();
+        self::$TSFE->tmpl->generateConfig();
+        self::$TSFE->tmpl->loaded = 1;
+        self::$TSFE->settingLanguage();
+        self::$TSFE->settingLocale();
     }
 
     /**
@@ -79,22 +85,22 @@ class Frontend
     private static function setCharSet()
     {
         // preparing csConvObj
-        if (!is_object($GLOBALS['TSFE']->csConvObj)) {
+        if (!is_object(self::$TSFE->csConvObj)) {
             if (is_object($GLOBALS['LANG'])) {
-                $GLOBALS['TSFE']->csConvObj = $GLOBALS['LANG']->csConvObj;
+                self::$TSFE->csConvObj = $GLOBALS['LANG']->csConvObj;
 
             } else {
-                $GLOBALS['TSFE']->csConvObj = Compatibility::makeInstance('t3lib_cs');
+                self::$TSFE->csConvObj = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Charset\\CharsetConverter');
             }
         }
 
         // preparing renderCharset
-        if (!is_object($GLOBALS['TSFE']->renderCharset)) {
+        if (!is_object(self::$TSFE->renderCharset)) {
             if (is_object($GLOBALS['LANG'])) {
-                $GLOBALS['TSFE']->renderCharset = $GLOBALS['LANG']->charSet;
+                self::$TSFE->renderCharset = $GLOBALS['LANG']->charSet;
 
             } else {
-                $GLOBALS['TSFE']->renderCharset = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
+                self::$TSFE->renderCharset = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
             }
         }
     }
@@ -113,25 +119,37 @@ class Frontend
     private static function setTimeTracker()
     {
         if (!is_object($GLOBALS['TT'])) {
-            $GLOBALS['TT'] = Compatibility::makeInstance('t3lib_TimeTrackNull');
+            $GLOBALS['TT'] = GeneralUtility::makeInstance('t3lib_TimeTrackNull');
         }
     }
 
+    private static function initTSFE($pageId = 0, $noCache = 0)
+    {
+        $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
+            'TYPO3\\CMS\\Frontend\\Controller\\TypoScriptFrontendController',
+            $GLOBALS['TYPO3_CONF_VARS'],
+            $pageId,
+            $noCache
+        );
+        // make a reference so we can be sure that any change in self::$TSFE affects $GLOBALS['TSFE']
+        self::$TSFE      =& $GLOBALS['TSFE'];
+    }
+
     /**
-     * Sets $GLOBALS['TSFE']
+     * Sets self::$TSFE
      */
     private static function setTsfe($pageId = 0, $noCache = 0)
     {
-        $GLOBALS['TSFE'] = Compatibility::makeInstance('tslib_fe', $GLOBALS['TYPO3_CONF_VARS'], $pageId, $noCache);
-        $GLOBALS['TSFE']->beUserLogin = false;
-        $GLOBALS['TSFE']->cObjectDepthCounter = 100;
-        $GLOBALS['TSFE']->workspacePreview = '';
-        $GLOBALS['TSFE']->initFEuser();
-        $GLOBALS['TSFE']->determineId();
-        $GLOBALS['TSFE']->initTemplate();
-        $GLOBALS['TSFE']->config = array();
-        $GLOBALS['TSFE']->tmpl->getFileName_backPath = PATH_site;
-        $GLOBALS['TSFE']->baseUrl = Compatibility::getIndpEnv('TYPO3_SITE_URL');
+        self::initTSFE($pageId, $noCache);
+        self::$TSFE->beUserLogin         = false;
+        self::$TSFE->cObjectDepthCounter = 100;
+        self::$TSFE->workspacePreview    = '';
+        self::$TSFE->initFEuser();
+        self::$TSFE->determineId();
+        self::$TSFE->initTemplate();
+        self::$TSFE->config                     = array();
+        self::$TSFE->tmpl->getFileName_backPath = PATH_site;
+        self::$TSFE->baseUrl                    = GeneralUtility::getIndpEnv('TYPO3_SITE_URL');
     }
 }
 
