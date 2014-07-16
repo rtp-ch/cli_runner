@@ -4,7 +4,6 @@ namespace RTP\CliRunner\Command;
 use BadMethodCallException;
 use RTP\CliRunner\Utility\File;
 use RTP\CliRunner\Utility\Typo3;
-use RTP\CliRunner\Service\Compatibility;
 
 /**
  * Class Qlass
@@ -113,4 +112,3 @@ class Qlass
         }
     }
 }
-
