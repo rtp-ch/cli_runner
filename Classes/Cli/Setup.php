@@ -2,9 +2,9 @@
 namespace RTP\CliRunner\Cli;
 
 use BadMethodCallException;
+use RTP\CliRunner\Service\Compatibility;
 use RTP\CliRunner\Utility\File as File;
 use RTP\CliRunner\Utility\Method as Method;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class Arguments
@@ -18,7 +18,7 @@ class Setup
     private $setup;
 
     /**
-     * @var Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 
@@ -28,7 +28,7 @@ class Setup
      *
      * @param $options
      */
-    public function __construct(Options $options)
+    public function __construct($options)
     {
         $this->options = $options;
     }
@@ -61,7 +61,7 @@ class Setup
         // the setup operation definition.
         if ($this->setup && strstr($this->setup, ':') !== false) {
 
-            $setupParts = GeneralUtility::trimExplode(':', $this->options->get('setup'), true, 2);
+            $setupParts = Compatibility::trimExplode(':', $this->options->get('setup'), true, 2);
             $setupFile = $setupParts[0];
             $this->setup = $setupParts[1];
 
@@ -97,7 +97,7 @@ class Setup
     {
         if ($this->has()) {
             if (strstr($this->setup, Method::ARROW_OPERATOR) !== false) {
-                $setupParts = GeneralUtility::trimExplode(Method::ARROW_OPERATOR, $this->setup, true, 2);
+                $setupParts = Compatibility::trimExplode(Method::ARROW_OPERATOR, $this->setup, true, 2);
                 Method::execute($setupParts[1], array(), $setupParts[0]);
 
             } elseif (is_callable($this->setup)) {
@@ -134,3 +134,4 @@ class Setup
         return $this->setup;
     }
 }
+

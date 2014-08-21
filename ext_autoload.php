@@ -1,10 +1,8 @@
 <?php
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-
 if(version_compare(TYPO3_version, '6.0.0', '>=')) {
 
-    $extensionPath = ExtensionManagementUtility::extPath('cli_runner');
+    $extensionPath = t3lib_extMgm::extPath('cli_runner');
     $extensionClassesPath = $extensionPath . 'Classes/';
 
     return array(

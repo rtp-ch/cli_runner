@@ -1,10 +1,11 @@
 <?php
 namespace RTP\CliRunner\Command;
 
+use BadMethodCallException;
 use ReflectionProperty;
-use RTP\CliRunner\Cli\Options;
+use RTP\CliRunner\Utility\File;
 use RTP\CliRunner\Utility\Typo3;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use RTP\CliRunner\Service\Compatibility;
 
 class Debug
 {
@@ -14,12 +15,12 @@ class Debug
     private $debug;
 
     /**
-     * @var Qlass
+     * @var \RTP\CliRunner\Command\Qlass
      */
     private $qlass;
 
     /**
-     * @var Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 
@@ -27,10 +28,10 @@ class Debug
      * # Constructor
      * Gets an instance of the command line options and the class handler and the result of the method execution.
      *
-     * @param Options $options
-     * @param Qlass   $qlass
+     * @param $options
+     * @param $qlass
      */
-    public function __construct(Options $options, Qlass $qlass)
+    public function __construct($options, $qlass)
     {
         $this->options = $options;
         $this->qlass = $qlass;
@@ -79,7 +80,7 @@ class Debug
             if (strpos($debug, '::')) {
 
                 // Resolves the definition of the static variable
-                $exports = GeneralUtility::trimExplode('::', $debug, true, 2);
+                $exports = Compatibility::trimExplode('::', $debug, true, 2);
                 $class = $exports[0];
                 $name  = $exports[1];
 
@@ -140,3 +141,4 @@ class Debug
         return $this->options->has('debug');
     }
 }
+

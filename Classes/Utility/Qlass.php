@@ -1,7 +1,7 @@
 <?php
 namespace RTP\CliRunner\Utility;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use RTP\CliRunner\Service\Compatibility;
 
 /**
  * Class Qlass
@@ -36,7 +36,7 @@ class Qlass
     public static function getInstance($class)
     {
         if (!is_object($class)) {
-            $class = GeneralUtility::makeInstance($class);
+            $class = Compatibility::makeInstance($class);
         }
 
         return $class;

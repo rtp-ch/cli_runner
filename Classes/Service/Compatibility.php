@@ -1,11 +1,6 @@
 <?php
 namespace RTP\CliRunner\Service;
 
-/**
- * Class Compatibility
- * @deprecated
- * @package RTP\CliRunner\Service
- */
 class Compatibility
 {
 

@@ -2,7 +2,6 @@
 namespace RTP\CliRunner\Command;
 
 use BadMethodCallException;
-use RTP\CliRunner\Cli\Options;
 use RTP\CliRunner\Utility\File;
 
 /**
@@ -17,7 +16,7 @@ class Method
     private $method;
 
     /**
-     * @var Options
+     * @var \RTP\CliRunner\Cli\Options
      */
     private $options;
 
@@ -25,9 +24,9 @@ class Method
      * # Constructor
      * Gets an instance of the command line options.
      *
-     * @param Options $options
+     * @param $options
      */
-    public function __construct(Options $options)
+    public function __construct($options)
     {
         $this->options = $options;
     }
