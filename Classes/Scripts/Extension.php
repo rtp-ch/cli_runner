@@ -1,6 +1,8 @@
 <?php
 namespace RTP\CliRunner\Scripts;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * #Provides command line access to extensions management.
  *
@@ -13,11 +15,81 @@ namespace RTP\CliRunner\Scripts;
  */
 class Extension
 {
+
+    /**
+     * Required to satisfy TYPO3's parentObj pattern
+     * @var \tx_em_Extensions_List
+     */
+    public $extensionList;
+
+    /**
+     * Install an extension
+     *
+     * @todo DOES NOT WORK WITH TYPO3 6.2 (yet) required redevelopment
+     * @deprecated
+     * @param string $extKey Name of the extension to install.
+     * @return bool
+     */
+    public function install($extKey)
+    {
+        if (self::isLoaded($extKey)) {
+            return true;
+        }
+
+        if (class_exists('TYPO3\CMS\Extensionmanager\Utility\InstallUtility')) {
+
+            // @see tx_introduction_import_extension::enableExtension
+            /** @var $objectManager \TYPO3\CMS\Extbase\Object\ObjectManager */
+            $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+            /** @var $installUtility \TYPO3\CMS\Extensionmanager\Utility\InstallUtility */
+            $installUtility = $objectManager->get('TYPO3\\CMS\\Extensionmanager\\Utility\\InstallUtility');
+            $installUtility->install($extKey);
+
+        } else {
+
+            $this->extensionList = GeneralUtility::makeInstance('tx_em_Extensions_List');
+            list($instList,) = $this->extensionList->getInstalledExtensions();
+            $newExtList = $this->extensionList->addExtToList($extKey, $instList);
+
+            $install = GeneralUtility::makeInstance('tx_em_Install', $this);
+            $install->setSilentMode(true);
+            $install->writeNewExtensionList($newExtList);
+            $install->forceDBupdates($extKey, $instList[$extKey]);
+
+            if (isset($instList[$extKey]['EM_CONF']['createDirs'])) {
+
+                $createDirs = $instList[$extKey]['EM_CONF']['createDirs'];
+                $createDirs = array_unique(GeneralUtility::trimExplode(',', $createDirs));
+                foreach ($createDirs as $crDir) {
+                    if (!@is_dir(PATH_site . $crDir)) {
+
+                        // Initialize:
+                        $crDirStart = '';
+                        $dirs_in_path = explode('/', preg_replace('/\/$/', '', $crDir));
+
+                        // Traverse each part of the dir path and create it one-by-one:
+                        foreach ($dirs_in_path as $dirP) {
+                            if (strcmp($dirP, '')) {
+                                $crDirStart .= $dirP . '/';
+                                if (!@is_dir(PATH_site . $crDirStart)) {
+                                    GeneralUtility::mkdir(PATH_site . $crDirStart);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ($instList[$extKey]['EM_CONF']['uploadfolder']) {
+                GeneralUtility::mkdir_deep(PATH_site, \tx_em_Tools::uploadFolder($extKey));
+            }
+        }
+    }
+
     /**
      * Check if an extension is loaded
      *
      * @param string $extKey Name of the extension to install.
-     *
      * @return mixed
      */
     private static function isLoaded($extKey)
