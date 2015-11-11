@@ -1,0 +1,10 @@
+{
+	"name": "rtp/cli_runer",
+	"type": "typo3-cms-extension",
+	"description": "Provides a lightweight cli entry point for executing TYPO3 methods/functions.",
+	"homepage": "https://github.com/rtp-ch/cli_runner",
+	"license": ["GPL-3.0+"],
+	"keywords": ["TYPO3 CMS"],
+	"version": "2.0.0"
+}
+
